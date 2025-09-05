@@ -6,6 +6,7 @@ type EvaluationContext struct {
 
 type Visitor interface {
 	VisitGrouping(node *GroupingNode, context *EvaluationContext) any
+	VisitLiteral(node *LiteralNode, context *EvaluationContext) any
 	VisitVariable(node *VariableNode, context *EvaluationContext) any
 	VisitBinary(node *BinaryNode, context *EvaluationContext) any
 	VisitUnary(node *UnaryNode, context *EvaluationContext) any

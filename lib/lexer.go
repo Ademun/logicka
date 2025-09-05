@@ -10,17 +10,18 @@ import (
 type TokenType int
 
 const (
-	LPAREN TokenType = iota
-	RPAREN
-	FORALL
-	EXISTS
-	IMPL
-	EQUIV
-	CONJ
-	DISJ
-	NEG
+	LPAREN TokenType = iota // (
+	RPAREN                  // )
+	FORALL                  // A
+	EXISTS                  // E
+	IMPL                    // ->
+	EQUIV                   // ~
+	CONJ                    // &
+	DISJ                    // \/
+	NEG                     // ! -
 	PRED
 	VAR
+	LIT // 1 0
 	EOF
 )
 
@@ -43,11 +44,13 @@ func (t TokenType) String() string {
 	case DISJ:
 		return "\\/"
 	case NEG:
-		return "-"
+		return "!"
 	case PRED:
 		return "PREDICATE"
 	case VAR:
 		return "VARIABLE"
+	case LIT:
+		return "LITERAL"
 	case EOF:
 		return "EOF"
 	default:
@@ -104,6 +107,9 @@ func Lex(str string) ([]Token, error) {
 			} else {
 				return nil, &UnexpectedRuneError{r, i}
 			}
+		case '1', '0':
+			tokens = append(tokens, Token{Type: LIT, Value: string(r)})
+
 		default:
 			if unicode.IsLetter(r) {
 				if unicode.IsLower(r) {

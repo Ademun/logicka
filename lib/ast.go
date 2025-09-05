@@ -12,6 +12,14 @@ func (g GroupingNode) Accept(visitor Visitor, context *EvaluationContext) any {
 	return visitor.VisitGrouping(&g, context)
 }
 
+type LiteralNode struct {
+	Value bool
+}
+
+func (l LiteralNode) Accept(visitor Visitor, context *EvaluationContext) any {
+	return visitor.VisitLiteral(&l, context)
+}
+
 type VariableNode struct {
 	Name string
 }

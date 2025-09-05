@@ -199,6 +199,14 @@ func (p *Parser) parseQuant() (ASTNode, error) {
 
 // <primary> ::= [a-z] | "(" <expr> ")"
 func (p *Parser) parsePrimary() (ASTNode, error) {
+	if p.current().Type == LIT {
+		literal := p.current().Value
+		p.advance()
+		if literal == "1" {
+			return &LiteralNode{Value: true}, nil
+		}
+		return &LiteralNode{Value: false}, nil
+	}
 	if p.current().Type == VAR {
 		variable := p.current().Value
 		p.advance()

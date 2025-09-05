@@ -16,6 +16,12 @@ func (b *BooleanSolver) VisitGrouping(node *GroupingNode, context *EvaluationCon
 	return node.Expr.Accept(b, context)
 }
 
+func (b *BooleanSolver) VisitLiteral(node *LiteralNode, context *EvaluationContext) any {
+	return []TruthTableEntry{
+		{Result: node.Value, Variables: []TruthTableVariable{}},
+	}
+}
+
 func (b *BooleanSolver) VisitVariable(node *VariableNode, context *EvaluationContext) any {
 	if val, ok := context.Variables[node.Name]; ok {
 		return []TruthTableEntry{
