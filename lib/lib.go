@@ -1,23 +1,27 @@
 package lib
 
 import (
+	"logicka/lib/lexer"
+	"logicka/lib/parser"
+	"logicka/lib/visitor"
 	"regexp"
 	"slices"
 	"strings"
 )
 
-func GenerateTruthTable(expr string, values map[string]bool) ([]TruthTableEntry, error) {
-	tokens, err := Lex(expr)
+func GenerateTruthTable(expr string, values map[string]bool) ([]visitor.TruthTableEntry, error) {
+	tokens, err := lexer.Lex(expr)
 	if err != nil {
 		return nil, err
 	}
-	parser := &Parser{tokens, 0}
-	ast, err := parser.ParseExpression()
+	prsr := &parser.Parser{Tokens: tokens}
+	ast, err := prsr.ParseExpression()
 	if err != nil {
 		return nil, err
 	}
-	ctx := &EvaluationContext{values}
-	table := ast.Accept(&BooleanSolver{}, ctx).([]TruthTableEntry)
+	ctx := &visitor.EvaluationContext{Variables: values}
+	solver := visitor.NewBooleanSolver(ctx)
+	table := solver.Visit(&ast)
 
 	for _, entry := range table {
 		slices.SortFunc(entry.Variables, sortVariables)
@@ -25,7 +29,7 @@ func GenerateTruthTable(expr string, values map[string]bool) ([]TruthTableEntry,
 	return table, nil
 }
 
-func sortVariables(a, b TruthTableVariable) int {
+func sortVariables(a, b visitor.TruthTableVariable) int {
 	return strings.Compare(a.Name, b.Name)
 }
 

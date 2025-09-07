@@ -1,4 +1,9 @@
-package lib
+package visitor
+
+import (
+	"logicka/lib/ast"
+	"logicka/lib/lexer"
+)
 
 type TruthTableEntry struct {
 	Result    bool
@@ -10,20 +15,47 @@ type TruthTableVariable struct {
 	Value bool
 }
 type BooleanSolver struct {
+	context *EvaluationContext
 }
 
-func (b *BooleanSolver) VisitGrouping(node *GroupingNode, context *EvaluationContext) any {
-	return node.Expr.Accept(b, context)
+func NewBooleanSolver(context *EvaluationContext) *BooleanSolver {
+	return &BooleanSolver{context: context}
 }
 
-func (b *BooleanSolver) VisitLiteral(node *LiteralNode, context *EvaluationContext) any {
+func (b *BooleanSolver) Visit(node *ast.ASTNode) []TruthTableEntry {
+	switch n := (*node).(type) {
+	case ast.GroupingNode:
+		return b.visitGrouping(&n)
+	case ast.LiteralNode:
+		return b.visitLiteral(&n)
+	case ast.VariableNode:
+		return b.visitVariable(&n)
+	case ast.BinaryNode:
+		return b.visitBinary(&n)
+	case ast.UnaryNode:
+		return b.visitUnary(&n)
+	case ast.PredicateNode:
+		return b.visitPredicate(&n)
+	case ast.QuantifierNode:
+		return b.visitQuantifier(&n)
+	default:
+		// TODO: implement me
+		panic("implement me")
+	}
+}
+
+func (b *BooleanSolver) visitGrouping(node *ast.GroupingNode) []TruthTableEntry {
+	return b.Visit(&node.Expr)
+}
+
+func (b *BooleanSolver) visitLiteral(node *ast.LiteralNode) []TruthTableEntry {
 	return []TruthTableEntry{
 		{Result: node.Value, Variables: []TruthTableVariable{}},
 	}
 }
 
-func (b *BooleanSolver) VisitVariable(node *VariableNode, context *EvaluationContext) any {
-	if val, ok := context.Variables[node.Name]; ok {
+func (b *BooleanSolver) visitVariable(node *ast.VariableNode) []TruthTableEntry {
+	if val, ok := b.context.Variables[node.Name]; ok {
 		return []TruthTableEntry{
 			{Result: val, Variables: []TruthTableVariable{
 				{Name: node.Name, Value: val},
@@ -40,9 +72,9 @@ func (b *BooleanSolver) VisitVariable(node *VariableNode, context *EvaluationCon
 	}
 }
 
-func (b *BooleanSolver) VisitBinary(node *BinaryNode, context *EvaluationContext) any {
-	left := node.Left.Accept(b, context).([]TruthTableEntry)
-	right := node.Right.Accept(b, context).([]TruthTableEntry)
+func (b *BooleanSolver) visitBinary(node *ast.BinaryNode) []TruthTableEntry {
+	left := b.Visit(&node.Left)
+	right := b.Visit(&node.Right)
 
 	res := make([]TruthTableEntry, 0)
 
@@ -53,22 +85,22 @@ func (b *BooleanSolver) VisitBinary(node *BinaryNode, context *EvaluationContext
 				continue
 			}
 			switch node.Operator {
-			case IMPL:
+			case lexer.IMPL:
 				res = append(res, TruthTableEntry{
 					Result:    !l.Result || r.Result,
 					Variables: merged,
 				})
-			case EQUIV:
+			case lexer.EQUIV:
 				res = append(res, TruthTableEntry{
 					Result:    l.Result == r.Result,
 					Variables: merged,
 				})
-			case CONJ:
+			case lexer.CONJ:
 				res = append(res, TruthTableEntry{
 					Result:    l.Result && r.Result,
 					Variables: merged,
 				})
-			case DISJ:
+			case lexer.DISJ:
 				res = append(res, TruthTableEntry{
 					Result:    l.Result || r.Result,
 					Variables: merged,
@@ -82,14 +114,14 @@ func (b *BooleanSolver) VisitBinary(node *BinaryNode, context *EvaluationContext
 	return res
 }
 
-func (b *BooleanSolver) VisitUnary(node *UnaryNode, context *EvaluationContext) any {
-	operands := node.Operand.Accept(b, context).([]TruthTableEntry)
+func (b *BooleanSolver) visitUnary(node *ast.UnaryNode) []TruthTableEntry {
+	operands := b.Visit(&node.Operand)
 
 	res := make([]TruthTableEntry, 0)
 
 	for _, o := range operands {
 		switch node.Operator {
-		case NEG:
+		case lexer.NEG:
 			res = append(res, TruthTableEntry{
 				Result:    !o.Result,
 				Variables: o.Variables,
@@ -102,12 +134,12 @@ func (b *BooleanSolver) VisitUnary(node *UnaryNode, context *EvaluationContext) 
 	return res
 }
 
-func (b *BooleanSolver) VisitPredicate(node *PredicateNode, context *EvaluationContext) any {
+func (b *BooleanSolver) visitPredicate(node *ast.PredicateNode) []TruthTableEntry {
 	// TODO implement me
 	panic("implement me")
 }
 
-func (b *BooleanSolver) VisitQuantifier(node *QuantifierNode, context *EvaluationContext) any {
+func (b *BooleanSolver) visitQuantifier(node *ast.QuantifierNode) []TruthTableEntry {
 	// TODO implement me
 	panic("implement me")
 }

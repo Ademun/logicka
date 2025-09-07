@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"logicka/lib"
+	"logicka/lib/visitor"
 	"strings"
 )
 
@@ -23,7 +24,7 @@ func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
 }
 
-func (a *App) CalculateTruthTable(expression string, variables map[string]bool) ([]lib.TruthTableEntry, error) {
+func (a *App) CalculateTruthTable(expression string, variables map[string]bool) ([]visitor.TruthTableEntry, error) {
 	if strings.TrimSpace(expression) == "" {
 		return nil, fmt.Errorf("expression cannot be empty")
 	}
