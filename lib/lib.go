@@ -21,7 +21,7 @@ func GenerateTruthTable(expr string, values map[string]bool) ([]visitor.TruthTab
 	}
 	ctx := &visitor.EvaluationContext{Variables: values}
 	solver := visitor.NewBooleanSolver(ctx)
-	table := solver.Visit(&ast)
+	table := solver.Visit(ast)
 
 	for _, entry := range table {
 		slices.SortFunc(entry.Variables, sortVariables)

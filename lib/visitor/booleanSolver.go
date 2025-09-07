@@ -1,6 +1,7 @@
 package visitor
 
 import (
+	"fmt"
 	"logicka/lib/ast"
 	"logicka/lib/lexer"
 )
@@ -22,22 +23,23 @@ func NewBooleanSolver(context *EvaluationContext) *BooleanSolver {
 	return &BooleanSolver{context: context}
 }
 
-func (b *BooleanSolver) Visit(node *ast.ASTNode) []TruthTableEntry {
-	switch n := (*node).(type) {
-	case ast.GroupingNode:
-		return b.visitGrouping(&n)
-	case ast.LiteralNode:
-		return b.visitLiteral(&n)
-	case ast.VariableNode:
-		return b.visitVariable(&n)
-	case ast.BinaryNode:
-		return b.visitBinary(&n)
-	case ast.UnaryNode:
-		return b.visitUnary(&n)
-	case ast.PredicateNode:
-		return b.visitPredicate(&n)
-	case ast.QuantifierNode:
-		return b.visitQuantifier(&n)
+func (b *BooleanSolver) Visit(node ast.ASTNode) []TruthTableEntry {
+	fmt.Printf("%T\n", node)
+	switch n := node.(type) {
+	case *ast.GroupingNode:
+		return b.visitGrouping(n)
+	case *ast.LiteralNode:
+		return b.visitLiteral(n)
+	case *ast.VariableNode:
+		return b.visitVariable(n)
+	case *ast.BinaryNode:
+		return b.visitBinary(n)
+	case *ast.UnaryNode:
+		return b.visitUnary(n)
+	case *ast.PredicateNode:
+		return b.visitPredicate(n)
+	case *ast.QuantifierNode:
+		return b.visitQuantifier(n)
 	default:
 		// TODO: implement me
 		panic("implement me")
@@ -45,7 +47,7 @@ func (b *BooleanSolver) Visit(node *ast.ASTNode) []TruthTableEntry {
 }
 
 func (b *BooleanSolver) visitGrouping(node *ast.GroupingNode) []TruthTableEntry {
-	return b.Visit(&node.Expr)
+	return b.Visit(node.Expr)
 }
 
 func (b *BooleanSolver) visitLiteral(node *ast.LiteralNode) []TruthTableEntry {
@@ -73,8 +75,8 @@ func (b *BooleanSolver) visitVariable(node *ast.VariableNode) []TruthTableEntry 
 }
 
 func (b *BooleanSolver) visitBinary(node *ast.BinaryNode) []TruthTableEntry {
-	left := b.Visit(&node.Left)
-	right := b.Visit(&node.Right)
+	left := b.Visit(node.Left)
+	right := b.Visit(node.Right)
 
 	res := make([]TruthTableEntry, 0)
 
@@ -115,7 +117,7 @@ func (b *BooleanSolver) visitBinary(node *ast.BinaryNode) []TruthTableEntry {
 }
 
 func (b *BooleanSolver) visitUnary(node *ast.UnaryNode) []TruthTableEntry {
-	operands := b.Visit(&node.Operand)
+	operands := b.Visit(node.Operand)
 
 	res := make([]TruthTableEntry, 0)
 
