@@ -10,7 +10,8 @@ import (
 )
 
 func GenerateTruthTable(expr string, values map[string]bool) ([]visitor.TruthTableEntry, error) {
-	tokens, err := lexer.Lex(expr)
+	lex := lexer.NewLexer(expr)
+	tokens, err := lex.Lex()
 	if err != nil {
 		return nil, err
 	}

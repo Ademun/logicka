@@ -2,8 +2,6 @@ package lexer
 
 import (
 	"fmt"
-	"regexp"
-	"strings"
 	"unicode"
 )
 
@@ -61,6 +59,7 @@ func (t TokenType) String() string {
 type Token struct {
 	Type  TokenType
 	Value string
+	Pos   int
 }
 
 type UnexpectedRuneError struct {
@@ -72,66 +71,106 @@ func (e *UnexpectedRuneError) Error() string {
 	return fmt.Sprintf("unexpected rune %c on pos %d", e.r, e.pos)
 }
 
-func Lex(str string) ([]Token, error) {
-	str = sanitizeInput(str)
-	var tokens []Token
-	runes := []rune(str)
-	for i := 0; i < len(runes); i++ {
-		r := runes[i]
-		switch r {
-		case '(':
-			tokens = append(tokens, Token{Type: LPAREN, Value: string(r)})
-		case ')':
-			tokens = append(tokens, Token{Type: RPAREN, Value: string(r)})
-		case 'A':
-			tokens = append(tokens, Token{Type: FORALL, Value: string(r)})
-		case 'E':
-			tokens = append(tokens, Token{Type: EXISTS, Value: string(r)})
-		case '-':
-			if (i+1 < len(runes)) && runes[i+1] == '>' {
-				tokens = append(tokens, Token{IMPL, "->"})
-				i++
-			} else {
-				tokens = append(tokens, Token{NEG, string(r)})
-			}
-		case '!':
-			tokens = append(tokens, Token{NEG, string(r)})
-		case '~':
-			tokens = append(tokens, Token{EQUIV, string(r)})
-		case '&':
-			tokens = append(tokens, Token{CONJ, string(r)})
-		case '\\':
-			if (i+1 < len(runes)) && runes[i+1] == '/' {
-				tokens = append(tokens, Token{DISJ, "\\/"})
-				i++
-			} else {
-				return nil, &UnexpectedRuneError{r, i}
-			}
-		case '1', '0':
-			tokens = append(tokens, Token{Type: LIT, Value: string(r)})
+type Lexer struct {
+	input []rune
+	pos   int
+}
 
-		default:
-			if unicode.IsLetter(r) {
-				if unicode.IsLower(r) {
-					var sb strings.Builder
-					sb.WriteRune(r)
-					for (i+1 < len(runes)) && unicode.IsLetter(runes[i+1]) {
-						sb.WriteRune(runes[i+1])
-						i++
-					}
-					tokens = append(tokens, Token{Type: VAR, Value: sb.String()})
-				} else {
-					tokens = append(tokens, Token{PRED, string(r)})
-				}
-			} else {
-				return nil, &UnexpectedRuneError{r, i}
-			}
+func NewLexer(input string) *Lexer {
+	return &Lexer{[]rune(input), 0}
+}
+
+func (l *Lexer) Lex() ([]Token, error) {
+	var tokens []Token
+
+	for l.pos < len(l.input) {
+		if unicode.IsSpace(l.input[l.pos]) {
+			l.pos++
+			continue
 		}
+		token, err := l.NextToken()
+		if err != nil {
+			return nil, err
+		}
+		tokens = append(tokens, token)
 	}
+
 	return tokens, nil
 }
 
-func sanitizeInput(input string) string {
-	regex := regexp.MustCompile(`\s+`)
-	return regex.ReplaceAllString(input, "")
+func (l *Lexer) NextToken() (Token, error) {
+	r := l.input[l.pos]
+	startPos := l.pos
+
+	switch r {
+	case '(':
+		l.pos++
+		return Token{Type: LPAREN, Value: "(", Pos: startPos}, nil
+	case ')':
+		l.pos++
+		return Token{Type: RPAREN, Value: ")", Pos: startPos}, nil
+	case 'A':
+		l.pos++
+		return Token{Type: FORALL, Value: "A", Pos: startPos}, nil
+	case 'E':
+		l.pos++
+		return Token{Type: EXISTS, Value: "E", Pos: startPos}, nil
+	case '-':
+		return l.lexImpl()
+	case '!':
+		l.pos++
+		return Token{Type: NEG, Value: "!", Pos: startPos}, nil
+	case '~':
+		l.pos++
+		return Token{Type: EQUIV, Value: "~", Pos: startPos}, nil
+	case '&':
+		l.pos++
+		return Token{Type: CONJ, Value: "&", Pos: startPos}, nil
+	case '\\':
+		return l.lexDisj()
+	case '1', '0':
+		l.pos++
+		return Token{Type: LIT, Value: string(r), Pos: startPos}, nil
+	default:
+		if unicode.IsLetter(r) {
+			return l.lexIdentifier()
+		}
+		return Token{}, fmt.Errorf("unexpected character '%c' at position %d", r, startPos)
+	}
+}
+
+func (l *Lexer) lexImpl() (Token, error) {
+	startPos := l.pos
+	if l.pos+1 < len(l.input) && l.input[l.pos+1] == '>' {
+		l.pos += 2
+		return Token{Type: IMPL, Value: "->", Pos: startPos}, nil
+	}
+	l.pos++
+	return Token{Type: NEG, Value: "-", Pos: startPos}, nil
+}
+
+// lexDisj обрабатывает дизъюнкцию (\/)
+func (l *Lexer) lexDisj() (Token, error) {
+	startPos := l.pos
+	if l.pos+1 < len(l.input) && l.input[l.pos+1] == '/' {
+		l.pos += 2
+		return Token{Type: DISJ, Value: "\\/", Pos: startPos}, nil
+	}
+	return Token{}, fmt.Errorf("expected '\\/' at position %d", startPos)
+}
+
+func (l *Lexer) lexIdentifier() (Token, error) {
+	startPos := l.pos
+	var value []rune
+
+	for l.pos < len(l.input) && unicode.IsLetter(l.input[l.pos]) {
+		value = append(value, l.input[l.pos])
+		l.pos++
+	}
+
+	strValue := string(value)
+	if unicode.IsLower(rune(strValue[0])) {
+		return Token{Type: VAR, Value: strValue, Pos: startPos}, nil
+	}
+	return Token{Type: PRED, Value: strValue, Pos: startPos}, nil
 }
