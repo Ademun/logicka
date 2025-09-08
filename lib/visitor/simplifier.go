@@ -1,7 +1,6 @@
 package visitor
 
 import (
-	"fmt"
 	"logicka/lib/ast"
 	"logicka/lib/lexer"
 )
@@ -14,7 +13,14 @@ func NewSimplifier() *Simplifier {
 }
 
 func (s *Simplifier) Visit(node ast.ASTNode) ast.ASTNode {
-	return s.visitSwitch(node)
+	current := node
+	for {
+		next := s.visitSwitch(current)
+		if next.Equals(current) {
+			return next
+		}
+		current = next
+	}
 }
 
 func (s *Simplifier) visitSwitch(node ast.ASTNode) ast.ASTNode {
@@ -154,7 +160,6 @@ func (s *Simplifier) visitUnary(node *ast.UnaryNode) ast.ASTNode {
 func (s *Simplifier) simplifyNegation(node *ast.UnaryNode) ast.ASTNode {
 	operand := s.Visit(node.Operand)
 	if ast.IsNegation(operand) {
-		fmt.Println("Negation")
 		return operand.(*ast.UnaryNode).Operand
 	}
 	if literal, ok := node.Operand.(*ast.LiteralNode); ok {
