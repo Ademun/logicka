@@ -1,4 +1,4 @@
-export namespace lib {
+export namespace visitor {
 	
 	export class TruthTableVariable {
 	    Name: string;

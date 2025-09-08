@@ -1,7 +1,6 @@
 package visitor
 
 import (
-	"fmt"
 	"logicka/lib/ast"
 	"logicka/lib/lexer"
 )
@@ -23,41 +22,40 @@ func NewBooleanSolver(context *EvaluationContext) *BooleanSolver {
 	return &BooleanSolver{context: context}
 }
 
-func (b *BooleanSolver) Visit(node ast.ASTNode) []TruthTableEntry {
-	fmt.Printf("%T\n", node)
+func (s *BooleanSolver) Visit(node ast.ASTNode) []TruthTableEntry {
 	switch n := node.(type) {
 	case *ast.GroupingNode:
-		return b.visitGrouping(n)
+		return s.visitGrouping(n)
 	case *ast.LiteralNode:
-		return b.visitLiteral(n)
+		return s.visitLiteral(n)
 	case *ast.VariableNode:
-		return b.visitVariable(n)
+		return s.visitVariable(n)
 	case *ast.BinaryNode:
-		return b.visitBinary(n)
+		return s.visitBinary(n)
 	case *ast.UnaryNode:
-		return b.visitUnary(n)
+		return s.visitUnary(n)
 	case *ast.PredicateNode:
-		return b.visitPredicate(n)
+		return s.visitPredicate(n)
 	case *ast.QuantifierNode:
-		return b.visitQuantifier(n)
+		return s.visitQuantifier(n)
 	default:
 		// TODO: implement me
 		panic("implement me")
 	}
 }
 
-func (b *BooleanSolver) visitGrouping(node *ast.GroupingNode) []TruthTableEntry {
-	return b.Visit(node.Expr)
+func (s *BooleanSolver) visitGrouping(node *ast.GroupingNode) []TruthTableEntry {
+	return s.Visit(node.Expr)
 }
 
-func (b *BooleanSolver) visitLiteral(node *ast.LiteralNode) []TruthTableEntry {
+func (s *BooleanSolver) visitLiteral(node *ast.LiteralNode) []TruthTableEntry {
 	return []TruthTableEntry{
 		{Result: node.Value, Variables: []TruthTableVariable{}},
 	}
 }
 
-func (b *BooleanSolver) visitVariable(node *ast.VariableNode) []TruthTableEntry {
-	if val, ok := b.context.Variables[node.Name]; ok {
+func (s *BooleanSolver) visitVariable(node *ast.VariableNode) []TruthTableEntry {
+	if val, ok := s.context.Variables[node.Name]; ok {
 		return []TruthTableEntry{
 			{Result: val, Variables: []TruthTableVariable{
 				{Name: node.Name, Value: val},
@@ -74,9 +72,9 @@ func (b *BooleanSolver) visitVariable(node *ast.VariableNode) []TruthTableEntry 
 	}
 }
 
-func (b *BooleanSolver) visitBinary(node *ast.BinaryNode) []TruthTableEntry {
-	left := b.Visit(node.Left)
-	right := b.Visit(node.Right)
+func (s *BooleanSolver) visitBinary(node *ast.BinaryNode) []TruthTableEntry {
+	left := s.Visit(node.Left)
+	right := s.Visit(node.Right)
 
 	res := make([]TruthTableEntry, 0)
 
@@ -116,8 +114,8 @@ func (b *BooleanSolver) visitBinary(node *ast.BinaryNode) []TruthTableEntry {
 	return res
 }
 
-func (b *BooleanSolver) visitUnary(node *ast.UnaryNode) []TruthTableEntry {
-	operands := b.Visit(node.Operand)
+func (s *BooleanSolver) visitUnary(node *ast.UnaryNode) []TruthTableEntry {
+	operands := s.Visit(node.Operand)
 
 	res := make([]TruthTableEntry, 0)
 
@@ -136,12 +134,12 @@ func (b *BooleanSolver) visitUnary(node *ast.UnaryNode) []TruthTableEntry {
 	return res
 }
 
-func (b *BooleanSolver) visitPredicate(node *ast.PredicateNode) []TruthTableEntry {
+func (s *BooleanSolver) visitPredicate(node *ast.PredicateNode) []TruthTableEntry {
 	// TODO implement me
 	panic("implement me")
 }
 
-func (b *BooleanSolver) visitQuantifier(node *ast.QuantifierNode) []TruthTableEntry {
+func (s *BooleanSolver) visitQuantifier(node *ast.QuantifierNode) []TruthTableEntry {
 	// TODO implement me
 	panic("implement me")
 }
