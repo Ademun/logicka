@@ -1,11 +1,13 @@
 package ast
 
 import (
+	"fmt"
 	"logicka/lib/lexer"
 )
 
 type ASTNode interface {
 	Equals(node ASTNode) bool
+	String() string
 }
 
 type GroupingNode struct {
@@ -17,13 +19,21 @@ func (g GroupingNode) Equals(node ASTNode) bool {
 	return ok && same.Expr.Equals(g.Expr)
 }
 
+func (g GroupingNode) String() string {
+	return fmt.Sprintf("(%s)", g.Expr.String())
+}
+
 type LiteralNode struct {
 	Value bool
 }
 
 func (l LiteralNode) Equals(node ASTNode) bool {
-	same, ok := node.(LiteralNode)
+	same, ok := node.(*LiteralNode)
 	return ok && same.Value == l.Value
+}
+
+func (l LiteralNode) String() string {
+	return fmt.Sprint(l.Value)
 }
 
 type VariableNode struct {
@@ -31,8 +41,12 @@ type VariableNode struct {
 }
 
 func (v VariableNode) Equals(node ASTNode) bool {
-	same, ok := node.(VariableNode)
+	same, ok := node.(*VariableNode)
 	return ok && same.Name == v.Name
+}
+
+func (v VariableNode) String() string {
+	return v.Name
 }
 
 type BinaryNode struct {
@@ -41,8 +55,12 @@ type BinaryNode struct {
 }
 
 func (b BinaryNode) Equals(node ASTNode) bool {
-	same, ok := node.(BinaryNode)
+	same, ok := node.(*BinaryNode)
 	return ok && b.Operator == same.Operator && b.Left.Equals(same.Left) && b.Right.Equals(same.Right)
+}
+
+func (b BinaryNode) String() string {
+	return fmt.Sprint(b.Left.String(), b.Operator.String(), b.Right.String())
 }
 
 type UnaryNode struct {
@@ -51,8 +69,12 @@ type UnaryNode struct {
 }
 
 func (u UnaryNode) Equals(node ASTNode) bool {
-	same, ok := node.(UnaryNode)
+	same, ok := node.(*UnaryNode)
 	return ok && u.Operator == same.Operator && u.Operand.Equals(same.Operand)
+}
+
+func (u UnaryNode) String() string {
+	return fmt.Sprint(u.Operator.String(), u.Operand.String())
 }
 
 type PredicateNode struct {
@@ -64,6 +86,10 @@ func (p PredicateNode) Equals(node ASTNode) bool {
 	return true
 }
 
+func (p PredicateNode) String() string {
+	return p.Name
+}
+
 type QuantifierNode struct {
 	Type     lexer.TokenType
 	Variable string
@@ -72,4 +98,8 @@ type QuantifierNode struct {
 
 func (q QuantifierNode) Equals(node ASTNode) bool {
 	return true
+}
+
+func (q QuantifierNode) String() string {
+	return fmt.Sprint(q.Variable, q.Domain)
 }

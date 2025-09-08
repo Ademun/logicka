@@ -22,6 +22,11 @@ func GenerateTruthTable(expr string, values map[string]bool) ([]visitor.TruthTab
 	}
 	ctx := &visitor.EvaluationContext{Variables: values}
 	solver := visitor.NewBooleanSolver(ctx)
+	simplifier := visitor.NewSimplifier()
+	simplifiedAst := simplifier.Visit(ast)
+	printer := visitor.NewTreePrinter()
+	printer.Visit(ast)
+	printer.Visit(simplifiedAst)
 	table := solver.Visit(ast)
 
 	for _, entry := range table {
