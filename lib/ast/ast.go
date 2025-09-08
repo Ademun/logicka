@@ -60,7 +60,7 @@ func (b BinaryNode) Equals(node ASTNode) bool {
 }
 
 func (b BinaryNode) String() string {
-	return fmt.Sprint(b.Left.String(), b.Operator.String(), b.Right.String())
+	return fmt.Sprint(b.Left.String(), " ", b.Operator.String(), " ", b.Right.String())
 }
 
 type UnaryNode struct {

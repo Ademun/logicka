@@ -1,6 +1,7 @@
 package lib
 
 import (
+	"fmt"
 	"logicka/lib/lexer"
 	"logicka/lib/parser"
 	"logicka/lib/visitor"
@@ -26,7 +27,9 @@ func GenerateTruthTable(expr string, values map[string]bool) ([]visitor.TruthTab
 	simplifiedAst := simplifier.Visit(ast)
 	printer := visitor.NewTreePrinter()
 	printer.Visit(ast)
+	fmt.Println(ast.String())
 	printer.Visit(simplifiedAst)
+	fmt.Println(simplifiedAst.String())
 	table := solver.Visit(ast)
 
 	for _, entry := range table {

@@ -33,7 +33,10 @@ func (t *TreePrinter) Visit(node ast.ASTNode) {
 	default:
 		panic(fmt.Sprintf("unknown node type: %T", node))
 	}
-	fmt.Println(node.String())
+}
+
+func (t *TreePrinter) visitSwitch(node ast.ASTNode) {
+
 }
 
 func (t *TreePrinter) visitGrouping(node *ast.GroupingNode) {
