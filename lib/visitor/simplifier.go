@@ -12,124 +12,115 @@ func NewSimplifier() *Simplifier {
 	return &Simplifier{}
 }
 
-func (s *Simplifier) Visit(node ast.ASTNode) ast.ASTNode {
+func (s *Simplifier) Simplify(node ast.ASTNode) (ast.ASTNode, error) {
 	current := node
 	for {
-		next := s.visitSwitch(current)
+		next, err := Accept[ast.ASTNode](current, s)
+		if err != nil {
+			return nil, err
+		}
 		if next.Equals(current) {
-			return next
+			return next, nil
 		}
 		current = next
 	}
 }
 
-func (s *Simplifier) visitSwitch(node ast.ASTNode) ast.ASTNode {
-	switch n := node.(type) {
-	case *ast.GroupingNode:
-		return s.visitGrouping(n)
-	case *ast.LiteralNode:
-		return s.visitLiteral(n)
-	case *ast.VariableNode:
-		return s.visitVariable(n)
-	case *ast.BinaryNode:
-		return s.visitBinary(n)
-	case *ast.UnaryNode:
-		return s.visitUnary(n)
-	case *ast.PredicateNode:
-		return s.visitPredicate(n)
-	case *ast.QuantifierNode:
-		return s.visitQuantifier(n)
-	default:
-		// TODO: implement me
-		panic("implement me")
+func (s *Simplifier) VisitGrouping(node *ast.GroupingNode) (ast.ASTNode, error) {
+	expr, err := Accept[ast.ASTNode](node.Expr, s)
+	if err != nil {
+		return nil, err
 	}
+	return &ast.GroupingNode{Expr: expr}, nil
 }
 
-func (s *Simplifier) visitGrouping(node *ast.GroupingNode) ast.ASTNode {
-	return &ast.GroupingNode{Expr: s.Visit(node.Expr)}
+func (s *Simplifier) VisitLiteral(node *ast.LiteralNode) (ast.ASTNode, error) {
+	return node, nil
 }
 
-func (s *Simplifier) visitLiteral(node *ast.LiteralNode) ast.ASTNode {
-	return node
+func (s *Simplifier) VisitVariable(node *ast.VariableNode) (ast.ASTNode, error) {
+	return node, nil
 }
 
-func (s *Simplifier) visitVariable(node *ast.VariableNode) ast.ASTNode {
-	return node
-}
+func (s *Simplifier) VisitBinary(node *ast.BinaryNode) (ast.ASTNode, error) {
+	left, err := Accept[ast.ASTNode](node.Left, s)
+	if err != nil {
+		return nil, err
+	}
+	right, err := Accept[ast.ASTNode](node.Right, s)
+	if err != nil {
+		return nil, err
+	}
 
-func (s *Simplifier) visitBinary(node *ast.BinaryNode) ast.ASTNode {
 	switch node.Operator {
 	case lexer.IMPL:
-		return s.simplifyImplication(node)
+		return s.simplifyImplication(left, right)
 	case lexer.EQUIV:
-		return s.simplifyEquivalence(node)
+		return s.simplifyEquivalence(left, right)
 	case lexer.CONJ:
-		return s.simplifyConjunction(node)
+		return s.simplifyConjunction(left, right)
 	case lexer.DISJ:
-		return s.simplifyDisjunction(node)
+		return s.simplifyDisjunction(left, right)
 	default:
 		panic("unhandled default case")
 	}
 }
 
-func (s *Simplifier) simplifyConjunction(node *ast.BinaryNode) ast.ASTNode {
-	left, right := s.Visit(node.Left), s.Visit(node.Right)
+func (s *Simplifier) simplifyConjunction(left, right ast.ASTNode) (ast.ASTNode, error) {
 	if ast.IsFalse(left) || ast.IsFalse(right) {
-		return &ast.LiteralNode{Value: false}
+		return &ast.LiteralNode{Value: false}, nil
 	}
 	if ast.IsTrue(left) {
-		return right
+		return right, nil
 	}
 	if ast.IsTrue(right) {
-		return left
+		return left, nil
 	}
 	if ast.IsNegationOfSame(left, right) || ast.IsNegationOfSame(right, left) {
-		return &ast.LiteralNode{Value: false}
+		return &ast.LiteralNode{Value: false}, nil
 	}
 	if left.Equals(right) {
-		return left
+		return left, nil
 	}
-	return &ast.BinaryNode{Operator: lexer.CONJ, Left: left, Right: right}
+	return &ast.BinaryNode{Operator: lexer.CONJ, Left: left, Right: right}, nil
 }
 
-func (s *Simplifier) simplifyDisjunction(node *ast.BinaryNode) ast.ASTNode {
-	left, right := s.Visit(node.Left), s.Visit(node.Right)
+func (s *Simplifier) simplifyDisjunction(left, right ast.ASTNode) (ast.ASTNode, error) {
 	if ast.IsTrue(left) || ast.IsTrue(right) {
-		return &ast.LiteralNode{Value: true}
+		return &ast.LiteralNode{Value: true}, nil
 	}
 	if ast.IsFalse(left) {
-		return right
+		return right, nil
 	}
 	if ast.IsFalse(right) {
-		return left
+		return left, nil
 	}
 	if ast.IsNegationOfSame(left, right) || ast.IsNegationOfSame(right, left) {
-		return &ast.LiteralNode{Value: true}
+		return &ast.LiteralNode{Value: true}, nil
 	}
 	if left.Equals(right) {
-		return left
+		return left, nil
 	}
 	if ast.IsConjunctionWith(left, right) {
-		return right
+		return right, nil
 	}
 	if ast.IsConjunctionWith(right, left) {
-		return left
+		return left, nil
 	}
-	return &ast.BinaryNode{Operator: lexer.DISJ, Left: left, Right: right}
+	return &ast.BinaryNode{Operator: lexer.DISJ, Left: left, Right: right}, nil
 }
 
-func (s *Simplifier) simplifyImplication(node *ast.BinaryNode) ast.ASTNode {
-	left, right := s.Visit(node.Left), s.Visit(node.Right)
-	return s.Visit(&ast.BinaryNode{
+func (s *Simplifier) simplifyImplication(left, right ast.ASTNode) (ast.ASTNode, error) {
+	negLeft := &ast.UnaryNode{Operator: lexer.NEG, Operand: left}
+	return Accept[ast.ASTNode](&ast.BinaryNode{
 		Operator: lexer.DISJ,
-		Left:     &ast.UnaryNode{Operator: lexer.NEG, Operand: left},
+		Left:     negLeft,
 		Right:    right,
-	})
+	}, s)
 }
 
-func (s *Simplifier) simplifyEquivalence(node *ast.BinaryNode) ast.ASTNode {
-	left, right := s.Visit(node.Left), s.Visit(node.Right)
-	return s.Visit(&ast.BinaryNode{
+func (s *Simplifier) simplifyEquivalence(left, right ast.ASTNode) (ast.ASTNode, error) {
+	return Accept[ast.ASTNode](&ast.BinaryNode{
 		Operator: lexer.CONJ,
 		Left: &ast.GroupingNode{
 			Expr: &ast.BinaryNode{
@@ -145,35 +136,39 @@ func (s *Simplifier) simplifyEquivalence(node *ast.BinaryNode) ast.ASTNode {
 				Right:    left,
 			},
 		},
-	})
+	}, s)
 }
 
-func (s *Simplifier) visitUnary(node *ast.UnaryNode) ast.ASTNode {
+func (s *Simplifier) VisitUnary(node *ast.UnaryNode) (ast.ASTNode, error) {
+	operand, err := Accept[ast.ASTNode](node.Operand, s)
+	if err != nil {
+		return nil, err
+	}
+
 	switch node.Operator {
 	case lexer.NEG:
-		return s.simplifyNegation(node)
+		return s.simplifyNegation(operand)
 	default:
 		panic("unhandled default case")
 	}
 }
 
-func (s *Simplifier) simplifyNegation(node *ast.UnaryNode) ast.ASTNode {
-	operand := s.Visit(node.Operand)
-	if ast.IsNegation(operand) {
-		return operand.(*ast.UnaryNode).Operand
+func (s *Simplifier) simplifyNegation(operand ast.ASTNode) (ast.ASTNode, error) {
+	if unary, ok := operand.(*ast.UnaryNode); ok && unary.Operator == lexer.NEG {
+		return unary.Operand, nil
 	}
-	if literal, ok := node.Operand.(*ast.LiteralNode); ok {
-		return &ast.LiteralNode{Value: !literal.Value}
+	if literal, ok := operand.(*ast.LiteralNode); ok {
+		return &ast.LiteralNode{Value: !literal.Value}, nil
 	}
-	return node
+	return &ast.UnaryNode{Operator: lexer.NEG, Operand: operand}, nil
 }
 
-func (s *Simplifier) visitPredicate(node *ast.PredicateNode) ast.ASTNode {
+func (s *Simplifier) VisitPredicate(node *ast.PredicateNode) (ast.ASTNode, error) {
 	// TODO implement me
 	panic("implement me")
 }
 
-func (s *Simplifier) visitQuantifier(node *ast.QuantifierNode) ast.ASTNode {
+func (s *Simplifier) VisitQuantifier(node *ast.QuantifierNode) (ast.ASTNode, error) {
 	// TODO implement me
 	panic("implement me")
 }
