@@ -14,69 +14,59 @@ func NewTreePrinter() *TreePrinter {
 	return &TreePrinter{}
 }
 
-func (t *TreePrinter) Visit(node ast.ASTNode) {
-	switch n := node.(type) {
-	case *ast.GroupingNode:
-		t.visitGrouping(n)
-	case *ast.LiteralNode:
-		t.visitLiteral(n)
-	case *ast.VariableNode:
-		t.visitVariable(n)
-	case *ast.BinaryNode:
-		t.visitBinary(n)
-	case *ast.UnaryNode:
-		t.visitUnary(n)
-	case *ast.PredicateNode:
-		t.visitPredicate(n)
-	case *ast.QuantifierNode:
-		t.visitQuantifier(n)
-	default:
-		panic(fmt.Sprintf("unknown node type: %T", node))
-	}
+func (t *TreePrinter) Print(node ast.ASTNode) error {
+	_, err := Accept[interface{}](node, t)
+	return err
 }
 
-func (t *TreePrinter) visitSwitch(node ast.ASTNode) {
-
-}
-
-func (t *TreePrinter) visitGrouping(node *ast.GroupingNode) {
+func (t *TreePrinter) VisitGrouping(node *ast.GroupingNode) (interface{}, error) {
 	t.printIndent("Grouping")
 	t.indentLevel++
-	t.Visit(node.Expr)
+	_, err := Accept[interface{}](node.Expr, t)
 	t.indentLevel--
+	return nil, err
 }
 
-func (t *TreePrinter) visitLiteral(node *ast.LiteralNode) {
+func (t *TreePrinter) VisitLiteral(node *ast.LiteralNode) (interface{}, error) {
 	t.printIndent(fmt.Sprintf("Literal: %t", node.Value))
+	return nil, nil
 }
 
-func (t *TreePrinter) visitVariable(node *ast.VariableNode) {
+func (t *TreePrinter) VisitVariable(node *ast.VariableNode) (interface{}, error) {
 	t.printIndent(fmt.Sprintf("Variable: %s", node.Name))
+	return nil, nil
 }
 
-func (t *TreePrinter) visitBinary(node *ast.BinaryNode) {
+func (t *TreePrinter) VisitBinary(node *ast.BinaryNode) (interface{}, error) {
 	t.printIndent(fmt.Sprintf("Binary: %s", node.Operator.String()))
 	t.indentLevel++
-	t.Visit(node.Left)
-	t.Visit(node.Right)
+	_, err1 := Accept[interface{}](node.Left, t)
+	_, err2 := Accept[interface{}](node.Right, t)
 	t.indentLevel--
+	if err1 != nil {
+		return nil, err1
+	}
+	return nil, err2
 }
 
-func (t *TreePrinter) visitUnary(node *ast.UnaryNode) {
+func (t *TreePrinter) VisitUnary(node *ast.UnaryNode) (interface{}, error) {
 	t.printIndent(fmt.Sprintf("Unary: %s", node.Operator.String()))
 	t.indentLevel++
-	t.Visit(node.Operand)
+	_, err := Accept[interface{}](node.Operand, t)
 	t.indentLevel--
+	return nil, err
 }
 
-func (t *TreePrinter) visitPredicate(node *ast.PredicateNode) {
+func (t *TreePrinter) VisitPredicate(node *ast.PredicateNode) (interface{}, error) {
 	t.printIndent(fmt.Sprintf("Predicate: %s", node.Name))
+	return nil, nil
 }
 
-func (t *TreePrinter) visitQuantifier(node *ast.QuantifierNode) {
+func (t *TreePrinter) VisitQuantifier(node *ast.QuantifierNode) (interface{}, error) {
 	t.printIndent(fmt.Sprintf("Quantifier: %s %s",
 		node.Type.String(),
 		node.Variable))
+	return nil, nil
 }
 
 func (t *TreePrinter) printIndent(text string) {
