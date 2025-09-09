@@ -2,7 +2,7 @@ import {Input} from "@/components/ui/input.tsx";
 import {Button} from "@/components/ui/button.tsx";
 import {useEffect, useState} from "react";
 import type {TruthTableEntry} from "@/types/truthTable.ts";
-import {CalculateTruthTable, ExtractVariables} from "../wailsjs/go/main/App";
+import {CalculateTruthTable, ExtractVariables} from "../wailsjs/go/lib/Logicka";
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card.tsx";
 import {Alert} from "./components/ui/alert";
 import {TruthTableDisplay} from "@/components/ui/truthTable.tsx";

@@ -1,7 +1,6 @@
 package lib
 
 import (
-	"fmt"
 	"logicka/lib/lexer"
 	"logicka/lib/parser"
 	"logicka/lib/visitor"
@@ -10,39 +9,60 @@ import (
 	"strings"
 )
 
-func GenerateTruthTable(expr string, values map[string]bool) ([]visitor.TruthTableEntry, error) {
+type Logicka struct {
+}
+
+func (l *Logicka) CalculateTruthTable(expr string, values map[string]bool) ([]visitor.TruthTableEntry, error) {
 	lex := lexer.NewLexer(expr)
 	tokens, err := lex.Lex()
 	if err != nil {
 		return nil, err
 	}
-	prsr := &parser.Parser{Tokens: tokens}
-	ast, err := prsr.ParseExpression()
+
+	p := &parser.Parser{Tokens: tokens}
+	ast, err := p.ParseExpression()
 	if err != nil {
 		return nil, err
 	}
+
 	ctx := &visitor.EvaluationContext{Variables: values}
 	solver := visitor.NewBooleanSolver(ctx)
 	simplifier := visitor.NewSimplifier()
 	simplifiedAst := simplifier.Visit(ast)
-	printer := visitor.NewTreePrinter()
-	printer.Visit(ast)
-	fmt.Println(ast.String())
-	printer.Visit(simplifiedAst)
-	fmt.Println(simplifiedAst.String())
-	table := solver.Visit(ast)
+
+	table := solver.Visit(simplifiedAst)
 
 	for _, entry := range table {
 		slices.SortFunc(entry.Variables, sortVariables)
 	}
+
 	return table, nil
+}
+
+func (l *Logicka) SimplifyExpression(expr string) (string, error) {
+	lex := lexer.NewLexer(expr)
+	tokens, err := lex.Lex()
+	if err != nil {
+		return "", err
+	}
+
+	p := &parser.Parser{Tokens: tokens}
+	ast, err := p.ParseExpression()
+	if err != nil {
+		return "", err
+	}
+
+	simplifier := visitor.NewSimplifier()
+	simplifiedAst := simplifier.Visit(ast)
+
+	return simplifiedAst.String(), nil
 }
 
 func sortVariables(a, b visitor.TruthTableVariable) int {
 	return strings.Compare(a.Name, b.Name)
 }
 
-func ExtractVariables(expr string) []string {
+func (l *Logicka) ExtractVariables(expr string) []string {
 	re := regexp.MustCompile(`\b[a-z]+\b`)
 	words := re.FindAllString(expr, -1)
 
