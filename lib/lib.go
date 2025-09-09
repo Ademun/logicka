@@ -1,6 +1,7 @@
 package lib
 
 import (
+	"logicka/lib/ast"
 	"logicka/lib/lexer"
 	"logicka/lib/parser"
 	"logicka/lib/visitor"
@@ -25,7 +26,7 @@ func (l *Logicka) CalculateTruthTable(expr string, values map[string]bool) ([]vi
 		return nil, err
 	}
 
-	ctx := &visitor.EvaluationContext{Variables: values}
+	ctx := &ast.EvaluationContext{Variables: values}
 	solver := visitor.NewBooleanSolver(ctx)
 	simplifier := visitor.NewSimplifier()
 	simplifiedAst := simplifier.Visit(ast)

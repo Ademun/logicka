@@ -22,45 +22,27 @@ func NewBooleanSolver(context *EvaluationContext) *BooleanSolver {
 	return &BooleanSolver{context: context}
 }
 
-func (s *BooleanSolver) Visit(node ast.ASTNode) []TruthTableEntry {
-	switch n := node.(type) {
-	case *ast.GroupingNode:
-		return s.visitGrouping(n)
-	case *ast.LiteralNode:
-		return s.visitLiteral(n)
-	case *ast.VariableNode:
-		return s.visitVariable(n)
-	case *ast.BinaryNode:
-		return s.visitBinary(n)
-	case *ast.UnaryNode:
-		return s.visitUnary(n)
-	case *ast.PredicateNode:
-		return s.visitPredicate(n)
-	case *ast.QuantifierNode:
-		return s.visitQuantifier(n)
-	default:
-		// TODO: implement me
-		panic("implement me")
-	}
+func (s *BooleanSolver) Solve(node ast.ASTNode) ([]TruthTableEntry, error) {
+	return Accept[[]TruthTableEntry](node, s)
 }
 
-func (s *BooleanSolver) visitGrouping(node *ast.GroupingNode) []TruthTableEntry {
-	return s.Visit(node.Expr)
+func (s *BooleanSolver) VisitGrouping(node *ast.GroupingNode) ([]TruthTableEntry, error) {
+	return Accept[[]TruthTableEntry](node.Expr, s)
 }
 
-func (s *BooleanSolver) visitLiteral(node *ast.LiteralNode) []TruthTableEntry {
+func (s *BooleanSolver) VisitLiteral(node *ast.LiteralNode) ([]TruthTableEntry, error) {
 	return []TruthTableEntry{
 		{Result: node.Value, Variables: []TruthTableVariable{}},
-	}
+	}, nil
 }
 
-func (s *BooleanSolver) visitVariable(node *ast.VariableNode) []TruthTableEntry {
+func (s *BooleanSolver) VisitVariable(node *ast.VariableNode) ([]TruthTableEntry, error) {
 	if val, ok := s.context.Variables[node.Name]; ok {
 		return []TruthTableEntry{
 			{Result: val, Variables: []TruthTableVariable{
 				{Name: node.Name, Value: val},
 			}},
-		}
+		}, nil
 	}
 	return []TruthTableEntry{
 		{Result: true, Variables: []TruthTableVariable{
@@ -69,12 +51,18 @@ func (s *BooleanSolver) visitVariable(node *ast.VariableNode) []TruthTableEntry 
 		{Result: false, Variables: []TruthTableVariable{
 			{Name: node.Name, Value: false},
 		}},
-	}
+	}, nil
 }
 
-func (s *BooleanSolver) visitBinary(node *ast.BinaryNode) []TruthTableEntry {
-	left := s.Visit(node.Left)
-	right := s.Visit(node.Right)
+func (s *BooleanSolver) VisitBinary(node *ast.BinaryNode) ([]TruthTableEntry, error) {
+	left, err := Accept[[]TruthTableEntry](node.Left, s)
+	if err != nil {
+		return nil, err
+	}
+	right, err := Accept[[]TruthTableEntry](node.Right, s)
+	if err != nil {
+		return nil, err
+	}
 
 	res := make([]TruthTableEntry, 0)
 
@@ -84,7 +72,7 @@ func (s *BooleanSolver) visitBinary(node *ast.BinaryNode) []TruthTableEntry {
 			if merged == nil {
 				continue
 			}
-			switch node.Operator {
+			switch op := node.Operator; op {
 			case lexer.IMPL:
 				res = append(res, TruthTableEntry{
 					Result:    !l.Result || r.Result,
@@ -106,40 +94,43 @@ func (s *BooleanSolver) visitBinary(node *ast.BinaryNode) []TruthTableEntry {
 					Variables: merged,
 				})
 			default:
-				panic("unhandled default case")
+				return nil, UnknownTokenType{TokenType: op.String()}
 			}
 		}
 	}
 
-	return res
+	return res, nil
 }
 
-func (s *BooleanSolver) visitUnary(node *ast.UnaryNode) []TruthTableEntry {
-	operands := s.Visit(node.Operand)
+func (s *BooleanSolver) VisitUnary(node *ast.UnaryNode) ([]TruthTableEntry, error) {
+	operands, err := Accept[[]TruthTableEntry](node.Operand, s)
+	if err != nil {
+		return nil, err
+	}
 
 	res := make([]TruthTableEntry, 0)
 
 	for _, o := range operands {
-		switch node.Operator {
+		switch op := node.Operator; op {
 		case lexer.NEG:
 			res = append(res, TruthTableEntry{
 				Result:    !o.Result,
 				Variables: o.Variables,
 			})
 		default:
-			panic("unhandled default case")
+			return nil, UnknownTokenType{TokenType: op.String()}
 		}
 	}
 
-	return res
+	return res, nil
 }
 
-func (s *BooleanSolver) visitPredicate(node *ast.PredicateNode) []TruthTableEntry {
+func (s *BooleanSolver) VisitPredicate(node *ast.PredicateNode) ([]TruthTableEntry, error) {
 	// TODO implement me
 	panic("implement me")
 }
 
-func (s *BooleanSolver) visitQuantifier(node *ast.QuantifierNode) []TruthTableEntry {
+func (s *BooleanSolver) VisitQuantifier(node *ast.QuantifierNode) ([]TruthTableEntry, error) {
 	// TODO implement me
 	panic("implement me")
 }
