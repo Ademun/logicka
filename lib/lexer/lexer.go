@@ -67,7 +67,7 @@ type UnexpectedRuneError struct {
 	pos int
 }
 
-func (e *UnexpectedRuneError) Error() string {
+func (e UnexpectedRuneError) Error() string {
 	return fmt.Sprintf("unexpected rune %c on pos %d", e.r, e.pos)
 }
 
@@ -135,7 +135,7 @@ func (l *Lexer) NextToken() (Token, error) {
 		if unicode.IsLetter(r) {
 			return l.lexIdentifier()
 		}
-		return Token{}, fmt.Errorf("unexpected character '%c' at position %d", r, startPos)
+		return Token{}, UnexpectedRuneError{pos: l.pos, r: r}
 	}
 }
 

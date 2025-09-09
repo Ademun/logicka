@@ -50,7 +50,7 @@ func (l *Logicka) SimplifyExpression(expr string) (string, error) {
 	lex := lexer.NewLexer(expr)
 	tokens, err := lex.Lex()
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("lexing error: %w", err)
 	}
 
 	p := &parser.Parser{Tokens: tokens}
