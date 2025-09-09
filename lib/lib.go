@@ -1,7 +1,7 @@
 package lib
 
 import (
-	"logicka/lib/ast"
+	"fmt"
 	"logicka/lib/lexer"
 	"logicka/lib/parser"
 	"logicka/lib/visitor"
@@ -26,12 +26,18 @@ func (l *Logicka) CalculateTruthTable(expr string, values map[string]bool) ([]vi
 		return nil, err
 	}
 
-	ctx := &ast.EvaluationContext{Variables: values}
+	ctx := &visitor.EvaluationContext{Variables: values}
 	solver := visitor.NewBooleanSolver(ctx)
 	simplifier := visitor.NewSimplifier()
-	simplifiedAst := simplifier.Visit(ast)
+	simplified, err := simplifier.Simplify(ast)
+	if err != nil {
+		return nil, fmt.Errorf("simplification error: %w", err)
+	}
 
-	table := solver.Visit(simplifiedAst)
+	table, err := solver.Solve(simplified)
+	if err != nil {
+		return nil, fmt.Errorf("solving error: %w", err)
+	}
 
 	for _, entry := range table {
 		slices.SortFunc(entry.Variables, sortVariables)
@@ -54,9 +60,12 @@ func (l *Logicka) SimplifyExpression(expr string) (string, error) {
 	}
 
 	simplifier := visitor.NewSimplifier()
-	simplifiedAst := simplifier.Visit(ast)
+	simplified, err := simplifier.Simplify(ast)
+	if err != nil {
+		return "", fmt.Errorf("simplification error: %w", err)
+	}
 
-	return simplifiedAst.String(), nil
+	return simplified.String(), nil
 }
 
 func sortVariables(a, b visitor.TruthTableVariable) int {
