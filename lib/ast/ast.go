@@ -15,7 +15,7 @@ type GroupingNode struct {
 }
 
 func (g GroupingNode) Equals(node ASTNode) bool {
-	same, ok := node.(GroupingNode)
+	same, ok := node.(*GroupingNode)
 	return ok && same.Expr.Equals(g.Expr)
 }
 
