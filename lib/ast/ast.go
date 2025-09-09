@@ -101,5 +101,5 @@ func (q QuantifierNode) Equals(node ASTNode) bool {
 }
 
 func (q QuantifierNode) String() string {
-	return fmt.Sprint(q.Variable, q.Domain)
+	return fmt.Sprint(q.Variable)
 }

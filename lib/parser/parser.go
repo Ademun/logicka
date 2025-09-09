@@ -41,7 +41,16 @@ func (p *Parser) expect(tokenType lexer.TokenType) error {
 
 // <expr> ::= <equal>
 func (p *Parser) ParseExpression() (ast.ASTNode, error) {
-	return p.parseEqual()
+	expr, err := p.parseEqual()
+	if err != nil {
+		return nil, err
+	}
+
+	if p.current().Type != lexer.EOF {
+		return nil, fmt.Errorf("unexpected token %s at pos %d, expected end of expression", p.current().Type.String(), p.current().Pos)
+	}
+
+	return expr, nil
 }
 
 // <equal> ::= <impl> ("~" <impl>)*
@@ -217,7 +226,7 @@ func (p *Parser) parsePrimary() (ast.ASTNode, error) {
 
 	if p.current().Type == lexer.LPAREN {
 		p.advance() // consume "("
-		expr, err := p.ParseExpression()
+		expr, err := p.parseEqual()
 		if err != nil {
 			return nil, err
 		}
@@ -226,5 +235,6 @@ func (p *Parser) parsePrimary() (ast.ASTNode, error) {
 		}
 		return &ast.GroupingNode{Expr: expr}, nil
 	}
+
 	return nil, fmt.Errorf("expected variable or '(', got %s", p.current().Type.String())
 }

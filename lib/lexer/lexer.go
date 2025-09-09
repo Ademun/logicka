@@ -160,17 +160,12 @@ func (l *Lexer) lexDisj() (Token, error) {
 }
 
 func (l *Lexer) lexIdentifier() (Token, error) {
+	r := l.input[l.pos]
 	startPos := l.pos
-	var value []rune
+	l.pos++
 
-	for l.pos < len(l.input) && unicode.IsLetter(l.input[l.pos]) {
-		value = append(value, l.input[l.pos])
-		l.pos++
+	if unicode.IsLower(r) {
+		return Token{Type: VAR, Value: string(r), Pos: startPos}, nil
 	}
-
-	strValue := string(value)
-	if unicode.IsLower(rune(strValue[0])) {
-		return Token{Type: VAR, Value: strValue, Pos: startPos}, nil
-	}
-	return Token{Type: PRED, Value: strValue, Pos: startPos}, nil
+	return Token{Type: PRED, Value: string(r), Pos: startPos}, nil
 }
