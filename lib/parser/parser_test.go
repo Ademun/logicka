@@ -61,10 +61,10 @@ func TestParser_BasicExpressions(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			lex := lexer.NewLexer(tt.input)
+			lex := lexer.NewBooleanLexer(tt.input)
 			tokens, err := lex.Lex()
 			if err != nil {
-				t.Fatalf("Lexer error: %v", err)
+				t.Fatalf("BooleanLexer error: %v", err)
 			}
 
 			p := &Parser{Tokens: tokens}
@@ -110,10 +110,10 @@ func TestParser_Precedence(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			lex := lexer.NewLexer(tt.input)
+			lex := lexer.NewBooleanLexer(tt.input)
 			tokens, err := lex.Lex()
 			if err != nil {
-				t.Fatalf("Lexer error: %v", err)
+				t.Fatalf("BooleanLexer error: %v", err)
 			}
 
 			p := &Parser{Tokens: tokens}
@@ -160,10 +160,10 @@ func TestParser_Grouping(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			lex := lexer.NewLexer(tt.input)
+			lex := lexer.NewBooleanLexer(tt.input)
 			tokens, err := lex.Lex()
 			if err != nil {
-				t.Fatalf("Lexer error: %v", err)
+				t.Fatalf("BooleanLexer error: %v", err)
 			}
 
 			p := &Parser{Tokens: tokens}
@@ -205,10 +205,10 @@ func TestParser_ComplexExpressions(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			lex := lexer.NewLexer(tt.input)
+			lex := lexer.NewBooleanLexer(tt.input)
 			tokens, err := lex.Lex()
 			if err != nil {
-				t.Fatalf("Lexer error: %v", err)
+				t.Fatalf("BooleanLexer error: %v", err)
 			}
 
 			p := &Parser{Tokens: tokens}
@@ -265,7 +265,7 @@ func TestParser_ErrorHandling(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			lex := lexer.NewLexer(tt.input)
+			lex := lexer.NewBooleanLexer(tt.input)
 			tokens, err := lex.Lex()
 			if err != nil && !tt.expectError {
 				t.Fatalf("Unexpected lexer error: %v", err)
@@ -312,10 +312,10 @@ func TestParser_PredicateAndQuantifier(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			lex := lexer.NewLexer(tt.input)
+			lex := lexer.NewBooleanLexer(tt.input)
 			tokens, err := lex.Lex()
 			if err != nil {
-				t.Fatalf("Lexer error: %v", err)
+				t.Fatalf("BooleanLexer error: %v", err)
 			}
 
 			p := &Parser{Tokens: tokens}

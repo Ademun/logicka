@@ -14,7 +14,7 @@ type Logicka struct {
 }
 
 func (l *Logicka) CalculateTruthTable(expr string, values map[string]bool) ([]visitor.TruthTableEntry, error) {
-	lex := lexer.NewLexer(expr)
+	lex := lexer.NewBooleanLexer(expr)
 	tokens, err := lex.Lex()
 	if err != nil {
 		return nil, err
@@ -31,8 +31,11 @@ func (l *Logicka) CalculateTruthTable(expr string, values map[string]bool) ([]vi
 	simplifier := visitor.NewSimplifier()
 	simplified, err := simplifier.Simplify(ast)
 	if err != nil {
+		fmt.Println(err)
 		return nil, fmt.Errorf("simplification error: %w", err)
 	}
+
+	fmt.Println(simplified.String())
 
 	table, err := solver.Solve(simplified)
 	if err != nil {
@@ -47,7 +50,7 @@ func (l *Logicka) CalculateTruthTable(expr string, values map[string]bool) ([]vi
 }
 
 func (l *Logicka) SimplifyExpression(expr string) (string, error) {
-	lex := lexer.NewLexer(expr)
+	lex := lexer.NewBooleanLexer(expr)
 	tokens, err := lex.Lex()
 	if err != nil {
 		return "", fmt.Errorf("lexing error: %w", err)

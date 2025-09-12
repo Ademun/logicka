@@ -7,20 +7,20 @@ import (
 )
 
 type Parser struct {
-	Tokens []lexer.Token
+	Tokens []lexer.Token[lexer.BooleanTokenType]
 	pos    int
 }
 
-func (p *Parser) current() lexer.Token {
+func (p *Parser) current() lexer.Token[lexer.BooleanTokenType] {
 	if p.pos >= len(p.Tokens) {
-		return lexer.Token{Type: lexer.EOF, Value: ""}
+		return lexer.Token[lexer.BooleanTokenType]{Type: lexer.EOF, Value: ""}
 	}
 	return p.Tokens[p.pos]
 }
 
-func (p *Parser) peek() lexer.Token {
+func (p *Parser) peek() lexer.Token[lexer.BooleanTokenType] {
 	if p.pos+1 >= len(p.Tokens) {
-		return lexer.Token{Type: lexer.EOF, Value: ""}
+		return lexer.Token[lexer.BooleanTokenType]{Type: lexer.EOF, Value: ""}
 	}
 	return p.Tokens[p.pos+1]
 }
@@ -31,7 +31,7 @@ func (p *Parser) advance() {
 	}
 }
 
-func (p *Parser) expect(tokenType lexer.TokenType) error {
+func (p *Parser) expect(tokenType lexer.BooleanTokenType) error {
 	if p.current().Type != tokenType {
 		return fmt.Errorf("expected %s, got %s", tokenType.String(), p.current().Type.String())
 	}
@@ -47,7 +47,7 @@ func (p *Parser) ParseExpression() (ast.ASTNode, error) {
 	}
 
 	if p.current().Type != lexer.EOF {
-		return nil, fmt.Errorf("unexpected token %s at pos %d, expected end of expression", p.current().Type.String(), p.current().Pos)
+		return nil, fmt.Errorf("unexpected Token[lexer.BooleanTokenType] %s at pos %d, expected end of expression", p.current().Type.String(), p.current().Pos)
 	}
 
 	return expr, nil

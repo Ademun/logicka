@@ -102,6 +102,11 @@ func (s *BooleanSolver) VisitBinary(node *ast.BinaryNode) ([]TruthTableEntry, er
 	return res, nil
 }
 
+// TODO: implement
+func (s *BooleanSolver) VisitChain(node *ast.ChainNode) ([]TruthTableEntry, error) {
+	return []TruthTableEntry{}, nil
+}
+
 func (s *BooleanSolver) VisitUnary(node *ast.UnaryNode) ([]TruthTableEntry, error) {
 	operands, err := Accept[[]TruthTableEntry](node.Operand, s)
 	if err != nil {

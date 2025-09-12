@@ -26,6 +26,7 @@ type Visitor[T any] interface {
 	VisitLiteral(node *ast.LiteralNode) (T, error)
 	VisitVariable(node *ast.VariableNode) (T, error)
 	VisitBinary(node *ast.BinaryNode) (T, error)
+	VisitChain(node *ast.ChainNode) (T, error)
 	VisitUnary(node *ast.UnaryNode) (T, error)
 	VisitPredicate(node *ast.PredicateNode) (T, error)
 	VisitQuantifier(node *ast.QuantifierNode) (T, error)
@@ -41,6 +42,8 @@ func Accept[T any](node ast.ASTNode, visitor Visitor[T]) (T, error) {
 		return visitor.VisitVariable(n)
 	case *ast.BinaryNode:
 		return visitor.VisitBinary(n)
+	case *ast.ChainNode:
+		return visitor.VisitChain(n)
 	case *ast.UnaryNode:
 		return visitor.VisitUnary(n)
 	case *ast.PredicateNode:
