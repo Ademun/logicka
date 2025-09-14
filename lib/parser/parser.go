@@ -162,14 +162,14 @@ func (p *Parser) parsePred() (ast.ASTNode, error) {
 			if err := p.expect(lexer.RPAREN); err != nil {
 				return nil, err
 			}
-			return &ast.PredicateNode{Name: predName, Body: args}, nil
+			return &ast.PredicateNode{Name: predName, Args: nil}, nil
 		} else {
 			// This is a predicate followed by a quantifier: [A-Z] <quant>
-			quant, err := p.parseQuant()
+			_, err := p.parseQuant()
 			if err != nil {
 				return nil, err
 			}
-			return &ast.PredicateNode{Name: predName, Body: quant}, nil
+			return &ast.PredicateNode{Name: predName, Args: nil}, nil
 		}
 	}
 	return p.parseQuant()

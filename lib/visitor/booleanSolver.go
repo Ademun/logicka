@@ -1,6 +1,7 @@
 package visitor
 
 import (
+	"fmt"
 	"logicka/lib/ast"
 	"logicka/lib/lexer"
 )
@@ -94,7 +95,7 @@ func (s *BooleanSolver) VisitBinary(node *ast.BinaryNode) ([]TruthTableEntry, er
 					Variables: merged,
 				})
 			default:
-				return nil, UnknownTokenType{TokenType: op.String()}
+				return nil, fmt.Errorf("unkown operator: %s", op)
 			}
 		}
 	}
@@ -123,7 +124,7 @@ func (s *BooleanSolver) VisitUnary(node *ast.UnaryNode) ([]TruthTableEntry, erro
 				Variables: o.Variables,
 			})
 		default:
-			return nil, UnknownTokenType{TokenType: op.String()}
+			return nil, fmt.Errorf("unkown operator: %s", op)
 		}
 	}
 
