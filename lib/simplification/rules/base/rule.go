@@ -12,6 +12,10 @@ type BaseRule struct {
 	name string
 }
 
+func NewBaseRule(name string) *BaseRule {
+	return &BaseRule{name: name}
+}
+
 func (r *BaseRule) Name() string {
 	return r.name
 }
