@@ -9,12 +9,12 @@ func TestLexer_BasicTokens(t *testing.T) {
 	tests := []struct {
 		name     string
 		input    string
-		expected []Token
+		expected []Token[BooleanTokenType]
 	}{
 		{
 			name:  "parentheses",
 			input: "()",
-			expected: []Token{
+			expected: []Token[BooleanTokenType]{
 				{Type: LPAREN, Value: "(", Pos: 0},
 				{Type: RPAREN, Value: ")", Pos: 1},
 			},
@@ -22,7 +22,7 @@ func TestLexer_BasicTokens(t *testing.T) {
 		{
 			name:  "quantifiers",
 			input: "AE",
-			expected: []Token{
+			expected: []Token[BooleanTokenType]{
 				{Type: FORALL, Value: "A", Pos: 0},
 				{Type: EXISTS, Value: "E", Pos: 1},
 			},
@@ -30,21 +30,21 @@ func TestLexer_BasicTokens(t *testing.T) {
 		{
 			name:  "implication",
 			input: "->",
-			expected: []Token{
+			expected: []Token[BooleanTokenType]{
 				{Type: IMPL, Value: "->", Pos: 0},
 			},
 		},
 		{
 			name:  "equivalence",
 			input: "~",
-			expected: []Token{
+			expected: []Token[BooleanTokenType]{
 				{Type: EQUIV, Value: "~", Pos: 0},
 			},
 		},
 		{
 			name:  "conjunction_disjunction",
 			input: "&\\/",
-			expected: []Token{
+			expected: []Token[BooleanTokenType]{
 				{Type: CONJ, Value: "&", Pos: 0},
 				{Type: DISJ, Value: "\\/", Pos: 1},
 			},
@@ -52,7 +52,7 @@ func TestLexer_BasicTokens(t *testing.T) {
 		{
 			name:  "negations",
 			input: "!-",
-			expected: []Token{
+			expected: []Token[BooleanTokenType]{
 				{Type: NEG, Value: "!", Pos: 0},
 				{Type: NEG, Value: "-", Pos: 1},
 			},
@@ -60,7 +60,7 @@ func TestLexer_BasicTokens(t *testing.T) {
 		{
 			name:  "literals",
 			input: "10",
-			expected: []Token{
+			expected: []Token[BooleanTokenType]{
 				{Type: LIT, Value: "1", Pos: 0},
 				{Type: LIT, Value: "0", Pos: 1},
 			},
@@ -68,7 +68,7 @@ func TestLexer_BasicTokens(t *testing.T) {
 		{
 			name:  "variables",
 			input: "abc",
-			expected: []Token{
+			expected: []Token[BooleanTokenType]{
 				{Type: VAR, Value: "a", Pos: 0},
 				{Type: VAR, Value: "b", Pos: 1},
 				{Type: VAR, Value: "c", Pos: 2},
@@ -77,7 +77,7 @@ func TestLexer_BasicTokens(t *testing.T) {
 		{
 			name:  "predicates",
 			input: "BC",
-			expected: []Token{
+			expected: []Token[BooleanTokenType]{
 				{Type: PRED, Value: "B", Pos: 0},
 				{Type: PRED, Value: "C", Pos: 1},
 			},
@@ -86,7 +86,7 @@ func TestLexer_BasicTokens(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			lex := NewLexer(tt.input)
+			lex := NewBooleanLexer(tt.input)
 			tokens, err := lex.Lex()
 			if err != nil {
 				t.Fatalf("Unexpected error: %v", err)
@@ -102,22 +102,22 @@ func TestLexer_ComplexExpressions(t *testing.T) {
 	tests := []struct {
 		name  string
 		input string
-		want  []TokenType
+		want  []BooleanTokenType
 	}{
 		{
 			name:  "simple_implication",
 			input: "a -> b",
-			want:  []TokenType{VAR, IMPL, VAR},
+			want:  []BooleanTokenType{VAR, IMPL, VAR},
 		},
 		{
 			name:  "conjunction_with_negation",
 			input: "!a & b",
-			want:  []TokenType{NEG, VAR, CONJ, VAR},
+			want:  []BooleanTokenType{NEG, VAR, CONJ, VAR},
 		},
 		{
 			name:  "complex_expression",
 			input: "(a \\/ b) -> (!c & d)",
-			want: []TokenType{
+			want: []BooleanTokenType{
 				LPAREN, VAR, DISJ, VAR, RPAREN,
 				IMPL,
 				LPAREN, NEG, VAR, CONJ, VAR, RPAREN,
@@ -126,7 +126,7 @@ func TestLexer_ComplexExpressions(t *testing.T) {
 		{
 			name:  "equivalence_expression",
 			input: "a ~ (b & c)",
-			want: []TokenType{
+			want: []BooleanTokenType{
 				VAR, EQUIV,
 				LPAREN, VAR, CONJ, VAR, RPAREN,
 			},
@@ -134,7 +134,7 @@ func TestLexer_ComplexExpressions(t *testing.T) {
 		{
 			name:  "quantifier_expression",
 			input: "A(x) P(x)",
-			want: []TokenType{
+			want: []BooleanTokenType{
 				FORALL, LPAREN, VAR, RPAREN,
 				PRED, LPAREN, VAR, RPAREN,
 			},
@@ -143,7 +143,7 @@ func TestLexer_ComplexExpressions(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			lex := NewLexer(tt.input)
+			lex := NewBooleanLexer(tt.input)
 			tokens, err := lex.Lex()
 			if err != nil {
 				t.Fatalf("Unexpected error: %v", err)
@@ -192,7 +192,7 @@ func TestLexer_ErrorHandling(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			lex := NewLexer(tt.input)
+			lex := NewBooleanLexer(tt.input)
 			_, err := lex.Lex()
 			if tt.expectError && err == nil {
 				t.Error("Expected error but got none")
@@ -208,28 +208,28 @@ func TestLexer_WhitespaceHandling(t *testing.T) {
 	tests := []struct {
 		name  string
 		input string
-		want  []TokenType
+		want  []BooleanTokenType
 	}{
 		{
 			name:  "spaces_between_tokens",
 			input: "  a   &   b  ",
-			want:  []TokenType{VAR, CONJ, VAR},
+			want:  []BooleanTokenType{VAR, CONJ, VAR},
 		},
 		{
 			name:  "tabs_and_newlines",
 			input: "a\t->\nb",
-			want:  []TokenType{VAR, IMPL, VAR},
+			want:  []BooleanTokenType{VAR, IMPL, VAR},
 		},
 		{
 			name:  "no_whitespace",
 			input: "a&b",
-			want:  []TokenType{VAR, CONJ, VAR},
+			want:  []BooleanTokenType{VAR, CONJ, VAR},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			lex := NewLexer(tt.input)
+			lex := NewBooleanLexer(tt.input)
 			tokens, err := lex.Lex()
 			if err != nil {
 				t.Fatalf("Unexpected error: %v", err)

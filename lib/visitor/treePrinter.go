@@ -49,6 +49,11 @@ func (t *TreePrinter) VisitBinary(node *ast.BinaryNode) (interface{}, error) {
 	return nil, err2
 }
 
+func (t *TreePrinter) VisitChain(node *ast.ChainNode) (interface{}, error) {
+	// TODO implement me
+	panic("implement me")
+}
+
 func (t *TreePrinter) VisitUnary(node *ast.UnaryNode) (interface{}, error) {
 	t.printIndent(fmt.Sprintf("Unary: %s", node.Operator.String()))
 	t.indentLevel++

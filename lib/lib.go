@@ -14,7 +14,7 @@ type Logicka struct {
 }
 
 func (l *Logicka) CalculateTruthTable(expr string, values map[string]bool) ([]visitor.TruthTableEntry, error) {
-	lex := lexer.NewLexer(expr)
+	lex := lexer.NewBooleanLexer(expr)
 	tokens, err := lex.Lex()
 	if err != nil {
 		return nil, err
@@ -31,10 +31,14 @@ func (l *Logicka) CalculateTruthTable(expr string, values map[string]bool) ([]vi
 	simplifier := visitor.NewSimplifier()
 	simplified, err := simplifier.Simplify(ast)
 	if err != nil {
+		fmt.Println(err)
 		return nil, fmt.Errorf("simplification error: %w", err)
 	}
 
-	table, err := solver.Solve(simplified)
+	fmt.Println(simplified.Trace)
+	fmt.Println(simplified.Result)
+
+	table, err := solver.Solve(simplified.Result)
 	if err != nil {
 		return nil, fmt.Errorf("solving error: %w", err)
 	}
@@ -47,7 +51,7 @@ func (l *Logicka) CalculateTruthTable(expr string, values map[string]bool) ([]vi
 }
 
 func (l *Logicka) SimplifyExpression(expr string) (string, error) {
-	lex := lexer.NewLexer(expr)
+	lex := lexer.NewBooleanLexer(expr)
 	tokens, err := lex.Lex()
 	if err != nil {
 		return "", fmt.Errorf("lexing error: %w", err)
@@ -59,13 +63,13 @@ func (l *Logicka) SimplifyExpression(expr string) (string, error) {
 		return "", err
 	}
 
-	simplifier := visitor.NewSimplifier()
+	simplifier := visitor.NewSimplifier(visitor.DefaultSimplificationOptions)
 	simplified, err := simplifier.Simplify(ast)
 	if err != nil {
 		return "", fmt.Errorf("simplification error: %w", err)
 	}
 
-	return simplified.String(), nil
+	return simplified.Result.String(), nil
 }
 
 func sortVariables(a, b visitor.TruthTableVariable) int {

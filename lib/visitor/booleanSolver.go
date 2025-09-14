@@ -1,6 +1,7 @@
 package visitor
 
 import (
+	"fmt"
 	"logicka/lib/ast"
 	"logicka/lib/lexer"
 )
@@ -94,12 +95,60 @@ func (s *BooleanSolver) VisitBinary(node *ast.BinaryNode) ([]TruthTableEntry, er
 					Variables: merged,
 				})
 			default:
-				return nil, UnknownTokenType{TokenType: op.String()}
+				return nil, fmt.Errorf("unkown operator: %s", op)
 			}
 		}
 	}
 
 	return res, nil
+}
+
+func (s *BooleanSolver) VisitChain(node *ast.ChainNode) ([]TruthTableEntry, error) {
+	if len(node.Operands) < 2 {
+		return nil, fmt.Errorf("chain must have at least 2 operands, got %d", len(node.Operands))
+	}
+
+	result, err := Accept[[]TruthTableEntry](node.Operands[0], s)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, operand := range node.Operands[1:] {
+		operandEntries, err := Accept[[]TruthTableEntry](operand, s)
+		if err != nil {
+			return nil, err
+		}
+
+		newResult := make([]TruthTableEntry, 0)
+
+		for _, leftEntry := range result {
+			for _, rightEntry := range operandEntries {
+				merged := mergeVariables(leftEntry.Variables, rightEntry.Variables)
+				if merged == nil {
+					continue
+				}
+
+				var combinedResult bool
+				switch node.Operator {
+				case lexer.CONJ:
+					combinedResult = leftEntry.Result && rightEntry.Result
+				case lexer.DISJ:
+					combinedResult = leftEntry.Result || rightEntry.Result
+				default:
+					return nil, fmt.Errorf("unsupported chain operator: %s", node.Operator)
+				}
+
+				newResult = append(newResult, TruthTableEntry{
+					Result:    combinedResult,
+					Variables: merged,
+				})
+			}
+		}
+
+		result = newResult
+	}
+
+	return result, nil
 }
 
 func (s *BooleanSolver) VisitUnary(node *ast.UnaryNode) ([]TruthTableEntry, error) {
@@ -118,7 +167,7 @@ func (s *BooleanSolver) VisitUnary(node *ast.UnaryNode) ([]TruthTableEntry, erro
 				Variables: o.Variables,
 			})
 		default:
-			return nil, UnknownTokenType{TokenType: op.String()}
+			return nil, fmt.Errorf("unkown operator: %s", op)
 		}
 	}
 
