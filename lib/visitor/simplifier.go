@@ -367,7 +367,7 @@ func (s *Simplifier) applyAbsorption(left, right ast.ASTNode, operator lexer.Boo
 		if binary.Left.Equals(ast.NewUnaryNode(lexer.NEG, left)) {
 			return ast.NewBinaryNode(operator, left, ast.NewGroupingNode(binary.Right)), true, nil
 		}
-		if binary.Right.Equals(ast.NewUnaryNode(lexer.IMPL, left)) {
+		if binary.Right.Equals(ast.NewUnaryNode(lexer.NEG, left)) {
 			return ast.NewBinaryNode(operator, left, ast.NewGroupingNode(binary.Left)), true, nil
 		}
 		if neg, ok := left.(*ast.UnaryNode); ok && neg.Operator == lexer.NEG {
@@ -580,9 +580,9 @@ func (s *Simplifier) applyDeMorgan(node *ast.BinaryNode) (ast.ASTNode, error) {
 		return nil, OperatorError{Operator: node.Operator.String()}
 	}
 
-	return ast.NewBinaryNode(newOperator,
+	return ast.NewGroupingNode(ast.NewBinaryNode(newOperator,
 		ast.NewUnaryNode(lexer.NEG, node.Left),
-		ast.NewUnaryNode(lexer.NEG, node.Right)), nil
+		ast.NewUnaryNode(lexer.NEG, node.Right))), nil
 }
 
 // applyDeMorganChain applies De Morgan's laws to chain nodes
@@ -642,10 +642,8 @@ func (s *Simplifier) VisitQuantifier(node *ast.QuantifierNode) (ast.ASTNode, err
 // isAtomicExpression returns true if the expression doesn't need grouping
 func isAtomicExpression(node ast.ASTNode) bool {
 	switch node.(type) {
-	case *ast.LiteralNode, *ast.VariableNode:
+	case *ast.LiteralNode, *ast.VariableNode, *ast.UnaryNode, *ast.GroupingNode:
 		return true
-	case *ast.UnaryNode:
-		return true // Unary operators have high precedence
 	default:
 		return false
 	}
