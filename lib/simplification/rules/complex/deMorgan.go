@@ -18,13 +18,13 @@ func NewDeMorganRule() *DeMorganRule {
 
 func (r *DeMorganRule) CanApply(node ast.ASTNode) bool {
 	unary, ok := node.(*ast.UnaryNode)
-	if !ok || unary.Operator != lexer.NEG {
+	if !ok {
 		return false
 	}
 
 	_, ok = unary.Operand.(*ast.GroupingNode)
 
-	return ok
+	return unary.Operator != lexer.NEG && ok
 }
 
 func (r *DeMorganRule) Apply(node ast.ASTNode) (ast.ASTNode, error) {

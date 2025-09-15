@@ -22,15 +22,15 @@ func (r *LiteralNegationRule) CanApply(node ast.ASTNode) bool {
 		return false
 	}
 
-	return unary.Operator == lexer.NEG
+	_, ok = unary.Operand.(*ast.LiteralNode)
+
+	return unary.Operator == lexer.NEG && ok
 }
 
 func (r *LiteralNegationRule) Apply(node ast.ASTNode) (ast.ASTNode, error) {
 	unary := node.(*ast.UnaryNode)
 
-	if literalOp, ok := unary.Operand.(*ast.LiteralNode); ok {
-		return ast.NewLiteralNode(!literalOp.Value), nil
-	}
+	literal := unary.Operand.(*ast.LiteralNode)
 
-	return node, nil
+	return ast.NewLiteralNode(!literal.Value), nil
 }
