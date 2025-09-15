@@ -1,4 +1,4 @@
-package boolean
+package basic
 
 import (
 	"logicka/lib/ast"
