@@ -8,7 +8,7 @@ func CreateBasicRules() []base.Rule {
 		NewDominationRule(),
 		NewIdempotencyRule(),
 		NewDoubleNegationRule(),
-		NewNegationRule(),
+		NewComplementRule(),
 		NewLiteralNegationRule(),
 		NewImplicationRule(),
 		NewEquivalenceRule(),
