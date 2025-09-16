@@ -146,10 +146,15 @@ func NewBinaryNode(operator lexer.BooleanTokenType, left, right ASTNode) *Binary
 
 func (b *BinaryNode) Equals(other ASTNode) bool {
 	node, ok := other.(*BinaryNode)
-	return ok &&
-		b.Operator == node.Operator &&
-		b.Left.Equals(node.Left) &&
-		b.Right.Equals(node.Right)
+	if !ok || b.Operator != node.Operator {
+		return false
+	}
+
+	if node.Operator == lexer.CONJ || node.Operator == lexer.DISJ || node.Operator == lexer.EQUIV {
+		return (b.Left.Equals(node.Left) && b.Right.Equals(node.Right)) || (b.Left.Equals(node.Right) && b.Right.Equals(node.Left))
+	}
+
+	return b.Left.Equals(node.Left) && node.Right.Equals(node.Right)
 }
 
 func (b *BinaryNode) Children() []ASTNode {
