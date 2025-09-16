@@ -13,7 +13,7 @@ func NewRuleSet(name string, rules []Rule) *RuleSet {
 
 func (rs *RuleSet) Apply(node ast.ASTNode) (ast.ASTNode, error) {
 	current := node
-
+	appliedRules := make([]Rule, 0)
 	for _, rule := range rs.Rules {
 		if !rule.CanApply(node) {
 			continue
@@ -24,7 +24,12 @@ func (rs *RuleSet) Apply(node ast.ASTNode) (ast.ASTNode, error) {
 			return nil, err
 		}
 
+		if simplified.Equals(current) {
+			continue
+		}
+
 		current = simplified
+		appliedRules = append(appliedRules, rule)
 	}
 
 	return current, nil

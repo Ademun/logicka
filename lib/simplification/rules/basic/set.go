@@ -14,3 +14,10 @@ func CreateBasicRules() []base.Rule {
 		NewEquivalenceRule(),
 	}
 }
+
+func CreateBasicRuleSet() *base.RuleSet {
+	ruleSet := &base.RuleSet{
+		Rules: CreateBasicRules(),
+	}
+	return ruleSet
+}

@@ -8,3 +8,10 @@ func CreateComplexRules() []base.Rule {
 		NewDeMorganRule(),
 	}
 }
+
+func CreateComplexRuleSet() *base.RuleSet {
+	ruleSet := &base.RuleSet{
+		Rules: CreateComplexRules(),
+	}
+	return ruleSet
+}
