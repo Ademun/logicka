@@ -4,10 +4,12 @@ package ast
 import (
 	"errors"
 	"fmt"
-	"slices"
-	"strings"
-
+	"hash/fnv"
 	"logicka/lib/lexer"
+	"logicka/lib/utils"
+	"slices"
+	"sort"
+	"strings"
 )
 
 var (
@@ -23,11 +25,9 @@ var (
 
 // ASTNode represents a node in the abstract syntax tree for logical expressions.
 type ASTNode interface {
-	// Equals returns true if this node is equivalent to the other node
 	Equals(other ASTNode) bool
-
-	// String returns a string representation of the node
 	String() string
+	Hash() uint64
 }
 
 // Traversable represents nodes that can be traversed (have children).
@@ -60,7 +60,7 @@ func NewGroupingNode(expr ASTNode) *GroupingNode {
 
 func (g *GroupingNode) Equals(other ASTNode) bool {
 	node, ok := other.(*GroupingNode)
-	return ok && g.Expr.Equals(node.Expr)
+	return ok && g.Hash() == node.Hash()
 }
 
 func (g *GroupingNode) Children() []ASTNode {
@@ -75,6 +75,13 @@ func (g *GroupingNode) String() string {
 	return fmt.Sprintf("(%s)", g.Expr.String())
 }
 
+func (g *GroupingNode) Hash() uint64 {
+	h := fnv.New64a()
+	h.Write([]byte("grouping"))
+	h.Write(utils.Uint64ToBytes(g.Expr.Hash()))
+	return h.Sum64()
+}
+
 // LiteralNode represents boolean literals (true/false).
 type LiteralNode struct {
 	Value bool
@@ -86,7 +93,7 @@ func NewLiteralNode(value bool) *LiteralNode {
 
 func (l *LiteralNode) Equals(other ASTNode) bool {
 	node, ok := other.(*LiteralNode)
-	return ok && l.Value == node.Value
+	return ok && l.Hash() == node.Hash()
 }
 
 func (l *LiteralNode) Children() []ASTNode {
@@ -104,6 +111,17 @@ func (l *LiteralNode) String() string {
 	return "false"
 }
 
+func (l *LiteralNode) Hash() uint64 {
+	h := fnv.New64a()
+	h.Write([]byte("literal"))
+	if l.Value {
+		h.Write([]byte("true"))
+	} else {
+		h.Write([]byte("false"))
+	}
+	return h.Sum64()
+}
+
 // VariableNode represents logical variables.
 type VariableNode struct {
 	Name string
@@ -115,7 +133,7 @@ func NewVariableNode(name string) *VariableNode {
 
 func (v *VariableNode) Equals(other ASTNode) bool {
 	node, ok := other.(*VariableNode)
-	return ok && v.Name == node.Name
+	return ok && v.Hash() == node.Hash()
 }
 
 func (v *VariableNode) Children() []ASTNode {
@@ -128,6 +146,13 @@ func (v *VariableNode) Contains(node ASTNode) bool {
 
 func (v *VariableNode) String() string {
 	return v.Name
+}
+
+func (v *VariableNode) Hash() uint64 {
+	h := fnv.New64a()
+	h.Write([]byte("variable"))
+	h.Write([]byte(v.Name))
+	return h.Sum64()
 }
 
 // BinaryNode represents binary logical operations.
@@ -146,15 +171,7 @@ func NewBinaryNode(operator lexer.BooleanTokenType, left, right ASTNode) *Binary
 
 func (b *BinaryNode) Equals(other ASTNode) bool {
 	node, ok := other.(*BinaryNode)
-	if !ok || b.Operator != node.Operator {
-		return false
-	}
-
-	if node.Operator == lexer.CONJ || node.Operator == lexer.DISJ || node.Operator == lexer.EQUIV {
-		return (b.Left.Equals(node.Left) && b.Right.Equals(node.Right)) || (b.Left.Equals(node.Right) && b.Right.Equals(node.Left))
-	}
-
-	return b.Left.Equals(node.Left) && node.Right.Equals(node.Right)
+	return ok && b.Hash() == node.Hash()
 }
 
 func (b *BinaryNode) Children() []ASTNode {
@@ -170,6 +187,33 @@ func (b *BinaryNode) String() string {
 		b.Left.String(),
 		b.Operator.String(),
 		b.Right.String())
+}
+
+func (b *BinaryNode) Hash() uint64 {
+	h := fnv.New64a()
+	h.Write([]byte("binary"))
+	h.Write([]byte(b.Operator.String()))
+
+	// For implication (IMPL), order matters
+	if b.Operator == lexer.IMPL {
+		h.Write(utils.Uint64ToBytes(b.Left.Hash()))
+		h.Write(utils.Uint64ToBytes(b.Right.Hash()))
+		return h.Sum64()
+	}
+	// For associative operations (CONJ, DISJ), use order-independent hash
+	leftHash := b.Left.Hash()
+	rightHash := b.Right.Hash()
+
+	// Combine hashes in a commutative way
+	if leftHash < rightHash {
+		h.Write(utils.Uint64ToBytes(leftHash))
+		h.Write(utils.Uint64ToBytes(rightHash))
+	} else {
+		h.Write(utils.Uint64ToBytes(rightHash))
+		h.Write(utils.Uint64ToBytes(leftHash))
+	}
+
+	return h.Sum64()
 }
 
 // ChainNode represents a flattened chain of binary operations of the same type.
@@ -192,16 +236,7 @@ func NewChainNode(operator lexer.BooleanTokenType, operands ...ASTNode) (*ChainN
 
 func (c *ChainNode) Equals(other ASTNode) bool {
 	node, ok := other.(*ChainNode)
-	if !ok || c.Operator != node.Operator || len(c.Operands) != len(node.Operands) {
-		return false
-	}
-
-	for i, operand := range c.Operands {
-		if !operand.Equals(node.Operands[i]) {
-			return false
-		}
-	}
-	return true
+	return ok && c.Hash() == node.Hash()
 }
 
 func (c *ChainNode) Children() []ASTNode {
@@ -235,6 +270,34 @@ func (c *ChainNode) String() string {
 	}
 
 	return "[" + strings.Join(parts, " "+c.Operator.String()+" ") + "]"
+}
+
+func (c *ChainNode) Hash() uint64 {
+	h := fnv.New64a()
+	h.Write([]byte("chain"))
+	h.Write([]byte(c.Operator.String()))
+
+	// For associative operations (CONJ, DISJ), sort hashes for order independence
+	if c.Operator == lexer.CONJ || c.Operator == lexer.DISJ {
+		hashes := make([]uint64, len(c.Operands))
+		for i, operand := range c.Operands {
+			hashes[i] = operand.Hash()
+		}
+		sort.Slice(hashes, func(i, j int) bool {
+			return hashes[i] < hashes[j]
+		})
+
+		for _, hash := range hashes {
+			h.Write(utils.Uint64ToBytes(hash))
+		}
+		return h.Sum64()
+	}
+	// For non-associative operations, preserve order
+	for _, operand := range c.Operands {
+		h.Write(utils.Uint64ToBytes(operand.Hash()))
+	}
+
+	return h.Sum64()
 }
 
 // ToBinary converts the ChainNode to a left-associative binary tree.
@@ -271,9 +334,7 @@ func NewUnaryNode(operator lexer.BooleanTokenType, operand ASTNode) *UnaryNode {
 
 func (u *UnaryNode) Equals(other ASTNode) bool {
 	node, ok := other.(*UnaryNode)
-	return ok &&
-		u.Operator == node.Operator &&
-		u.Operand.Equals(node.Operand)
+	return ok && u.Hash() == node.Hash()
 }
 
 func (u *UnaryNode) Children() []ASTNode {
@@ -286,6 +347,14 @@ func (u *UnaryNode) Contains(node ASTNode) bool {
 
 func (u *UnaryNode) String() string {
 	return fmt.Sprintf("%s%s", u.Operator.String(), u.Operand.String())
+}
+
+func (u *UnaryNode) Hash() uint64 {
+	h := fnv.New64a()
+	h.Write([]byte("unary"))
+	h.Write([]byte(u.Operator.String()))
+	h.Write(utils.Uint64ToBytes(u.Operand.Hash()))
+	return h.Sum64()
 }
 
 // PredicateNode represents predicate logic expressions (future extension).
@@ -303,16 +372,7 @@ func NewPredicateNode(name string, args ...ASTNode) *PredicateNode {
 
 func (p *PredicateNode) Equals(other ASTNode) bool {
 	node, ok := other.(*PredicateNode)
-	if !ok || p.Name != node.Name || len(p.Args) != len(node.Args) {
-		return false
-	}
-
-	for i, arg := range p.Args {
-		if !arg.Equals(node.Args[i]) {
-			return false
-		}
-	}
-	return true
+	return ok && p.Hash() == node.Hash()
 }
 
 func (p *PredicateNode) Children() []ASTNode {
@@ -338,6 +398,10 @@ func (p *PredicateNode) String() string {
 	return fmt.Sprintf("%s(%s)", p.Name, strings.Join(argStrs, ", "))
 }
 
+func (p *PredicateNode) Hash() uint64 {
+	panic("implement me")
+}
+
 // QuantifierNode represents quantified expressions (∀, ∃).
 type QuantifierNode struct {
 	Type     lexer.BooleanTokenType
@@ -357,11 +421,7 @@ func NewQuantifierNode(qType lexer.BooleanTokenType, variable string, domain, bo
 
 func (q *QuantifierNode) Equals(other ASTNode) bool {
 	node, ok := other.(*QuantifierNode)
-	return ok &&
-		q.Type == node.Type &&
-		q.Variable == node.Variable &&
-		q.Domain.Equals(node.Domain) &&
-		q.Body.Equals(node.Body)
+	return ok && q.Hash() == node.Hash()
 }
 
 func (q *QuantifierNode) Children() []ASTNode {
@@ -378,6 +438,10 @@ func (q *QuantifierNode) String() string {
 		q.Variable,
 		q.Domain.String(),
 		q.Body.String())
+}
+
+func (q *QuantifierNode) Hash() uint64 {
+	panic("implement me")
 }
 
 // Utility functions for common AST operations
