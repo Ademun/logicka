@@ -6,17 +6,17 @@ import (
 	"logicka/lib/simplification/rules/base"
 )
 
-type BinaryAbsorptionRule struct {
+type AbsorptionRule struct {
 	base.BaseRule
 }
 
-func NewAbsorptionRule() *BinaryAbsorptionRule {
-	return &BinaryAbsorptionRule{
+func NewAbsorptionRule() *AbsorptionRule {
+	return &AbsorptionRule{
 		BaseRule: *base.NewBaseRule("Absorption law"),
 	}
 }
 
-func (r *BinaryAbsorptionRule) CanApply(node ast.ASTNode) bool {
+func (r *AbsorptionRule) CanApply(node ast.ASTNode) bool {
 	binary, ok := node.(*ast.BinaryNode)
 	if !ok {
 		return false
@@ -32,7 +32,7 @@ func (r *BinaryAbsorptionRule) CanApply(node ast.ASTNode) bool {
 	return lok != rok
 }
 
-func (r *BinaryAbsorptionRule) Apply(node ast.ASTNode) (ast.ASTNode, error) {
+func (r *AbsorptionRule) Apply(node ast.ASTNode) (ast.ASTNode, error) {
 	binary := node.(*ast.BinaryNode)
 
 	if result, absorbed := r.applyAbsorption(binary.Operator, binary.Left, binary.Right); absorbed {
@@ -46,25 +46,35 @@ func (r *BinaryAbsorptionRule) Apply(node ast.ASTNode) (ast.ASTNode, error) {
 	return node, nil
 }
 
-func (r *BinaryAbsorptionRule) applyAbsorption(operator lexer.BooleanTokenType, left, right ast.ASTNode) (ast.ASTNode, bool) {
+func (r *AbsorptionRule) applyAbsorption(operator lexer.BooleanTokenType, left, right ast.ASTNode) (ast.ASTNode, bool) {
+	flippedOperator := flipOperator(operator)
+
 	grouping, ok := right.(*ast.GroupingNode)
 	if !ok {
 		return ast.NewBinaryNode(operator, left, right), false
 	}
 
-	binary, ok := grouping.Expr.(*ast.BinaryNode)
-	if !ok {
+	if binary, ok := grouping.Expr.(*ast.BinaryNode); ok {
+		if binary.Operator != flippedOperator {
+			return ast.NewBinaryNode(operator, left, right), false
+		}
+
+		if left.Equals(binary.Left) || right.Equals(binary.Right) {
+			return left, true
+		}
+
 		return ast.NewBinaryNode(operator, left, right), false
 	}
 
-	flippedOperator := flipOperator(operator)
-	if binary.Operator != flippedOperator {
-		return ast.NewBinaryNode(operator, left, right), false
+	if chain, ok := grouping.Expr.(*ast.ChainNode); ok {
+		if chain.Operator != flippedOperator {
+			return ast.NewBinaryNode(operator, left, right), false
+		}
+
+		if chain.Contains(left) {
+			return left, true
+		}
 	}
 
-	if left.Equals(binary.Left) || right.Equals(binary.Right) {
-		return left, true
-	}
-
-	return ast.NewBinaryNode(operator, left, right), false
+	return ast.NewBinaryNode(operator, left, right), true
 }
