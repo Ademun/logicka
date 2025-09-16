@@ -73,21 +73,17 @@ func (r *AbsorptionRule) applyBinaryAbsorption(operator lexer.BooleanTokenType, 
 		return left, true
 	}
 
-	if binary.Left.Equals(ast.NewUnaryNode(lexer.NEG, left)) {
+	if ast.IsNegationOf(binary.Left, left) {
 		return ast.NewBinaryNode(operator, left, ast.NewGroupingNode(binary.Right)), true
 	}
-	if binary.Right.Equals(ast.NewUnaryNode(lexer.NEG, left)) {
+	if ast.IsNegationOf(binary.Right, left) {
 		return ast.NewBinaryNode(operator, left, ast.NewGroupingNode(binary.Left)), true
 	}
-
-	if neg, ok := left.(*ast.UnaryNode); ok && neg.Operator == lexer.NEG {
-		if neg.Operand.Equals(binary.Left) {
-			return ast.NewBinaryNode(operator, neg, binary.Right), true
-		}
-
-		if neg.Operand.Equals(binary.Right) {
-			return ast.NewBinaryNode(operator, neg, binary.Left), true
-		}
+	if ast.IsNegationOf(left, binary.Left) {
+		return ast.NewBinaryNode(operator, left, binary.Right), true
+	}
+	if ast.IsNegationOf(left, binary.Right) {
+		return ast.NewBinaryNode(operator, left, binary.Left), true
 	}
 
 	return ast.NewBinaryNode(operator, left, right), false
