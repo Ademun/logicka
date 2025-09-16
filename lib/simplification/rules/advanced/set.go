@@ -1,17 +1,18 @@
-package complex
+package advanced
 
 import "logicka/lib/simplification/rules/base"
 
-func CreateComplexRules() []base.Rule {
+func CreateAdvancedRules() []base.Rule {
 	return []base.Rule{
 		NewAbsorptionRule(),
 		NewDeMorganRule(),
+		NewResolutionRule(),
 	}
 }
 
-func CreateComplexRuleSet() *base.RuleSet {
+func CreateAdvancedRuleSet() *base.RuleSet {
 	ruleSet := &base.RuleSet{
-		Rules: CreateComplexRules(),
+		Rules: CreateAdvancedRules(),
 	}
 	return ruleSet
 }

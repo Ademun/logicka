@@ -1,6 +1,9 @@
 package base
 
-import "logicka/lib/ast"
+import (
+	"fmt"
+	"logicka/lib/ast"
+)
 
 type RuleSet struct {
 	Name  string
@@ -15,7 +18,7 @@ func (rs *RuleSet) Apply(node ast.ASTNode) (ast.ASTNode, error) {
 	current := node
 	appliedRules := make([]Rule, 0)
 	for _, rule := range rs.Rules {
-		if !rule.CanApply(node) {
+		if !rule.CanApply(current) {
 			continue
 		}
 
@@ -27,6 +30,7 @@ func (rs *RuleSet) Apply(node ast.ASTNode) (ast.ASTNode, error) {
 		if simplified.Equals(current) {
 			continue
 		}
+		fmt.Println("Simplified", current, simplified)
 
 		current = simplified
 		appliedRules = append(appliedRules, rule)

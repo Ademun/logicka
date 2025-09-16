@@ -4,6 +4,9 @@ import (
 	"fmt"
 	"logicka/lib/lexer"
 	"logicka/lib/parser"
+	"logicka/lib/simplification/rules/advanced"
+	"logicka/lib/simplification/rules/basic"
+	"logicka/lib/simplification/rules/chain"
 	"logicka/lib/visitor"
 	"regexp"
 	"slices"
@@ -29,16 +32,17 @@ func (l *Logicka) CalculateTruthTable(expr string, values map[string]bool) ([]vi
 	ctx := &visitor.EvaluationContext{Variables: values}
 	solver := visitor.NewBooleanSolver(ctx)
 	simplifier := visitor.NewSimplifier()
+	simplifier.AddRuleSet(basic.CreateBasicRuleSet())
+	simplifier.AddRuleSet(advanced.CreateAdvancedRuleSet())
+	simplifier.AddRuleSet(chain.CreateChainRuleSet())
 	simplified, err := simplifier.Simplify(ast)
 	if err != nil {
 		fmt.Println(err)
 		return nil, fmt.Errorf("simplification error: %w", err)
 	}
 
-	fmt.Println(simplified.Trace)
-	fmt.Println(simplified.Result)
-
-	table, err := solver.Solve(simplified.Result)
+	fmt.Println(simplified.String())
+	table, err := solver.Solve(simplified)
 	if err != nil {
 		return nil, fmt.Errorf("solving error: %w", err)
 	}
@@ -63,13 +67,13 @@ func (l *Logicka) SimplifyExpression(expr string) (string, error) {
 		return "", err
 	}
 
-	simplifier := visitor.NewSimplifier(visitor.DefaultSimplificationOptions)
+	simplifier := visitor.NewSimplifier()
 	simplified, err := simplifier.Simplify(ast)
 	if err != nil {
 		return "", fmt.Errorf("simplification error: %w", err)
 	}
 
-	return simplified.Result.String(), nil
+	return simplified.String(), nil
 }
 
 func sortVariables(a, b visitor.TruthTableVariable) int {

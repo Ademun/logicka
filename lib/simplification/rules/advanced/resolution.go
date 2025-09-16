@@ -1,4 +1,4 @@
-package complex
+package advanced
 
 import (
 	"logicka/lib/ast"
@@ -37,32 +37,35 @@ func (r *ResolutionRule) Apply(node ast.ASTNode) (ast.ASTNode, error) {
 	lGroup := binary.Left.(*ast.GroupingNode)
 	rGroup := binary.Right.(*ast.GroupingNode)
 
-	if leftBinary, lok := lGroup.Expr.(*ast.BinaryNode); lok {
-		if rightBinary, rok := rGroup.Expr.(*ast.BinaryNode); rok {
+	if leftBinary, lok := lGroup.Expr.(*ast.BinaryNode); lok && leftBinary.Operator == lexer.DISJ {
+		if rightBinary, rok := rGroup.Expr.(*ast.BinaryNode); rok && rightBinary.Operator == lexer.DISJ {
+			if leftBinary.Operator == rightBinary.Operator {
+				return node, nil
+			}
 			if result, resolved := r.applyBinaryResolution(leftBinary, rightBinary); resolved {
 				return result, nil
 			}
 		}
 	}
 
-	if leftChain, lok := lGroup.Expr.(*ast.ChainNode); lok {
-		if rightChain, rok := rGroup.Expr.(*ast.ChainNode); rok {
+	if leftChain, lok := lGroup.Expr.(*ast.ChainNode); lok && leftChain.Operator == lexer.DISJ {
+		if rightChain, rok := rGroup.Expr.(*ast.ChainNode); rok && rightChain.Operator == lexer.DISJ {
 			if result, resolved := r.applyChainResolution(leftChain, rightChain); resolved {
 				return result, nil
 			}
 		}
 	}
 
-	if leftBinary, lok := lGroup.Expr.(*ast.BinaryNode); lok {
-		if rightChain, rok := rGroup.Expr.(*ast.ChainNode); rok {
+	if leftBinary, lok := lGroup.Expr.(*ast.BinaryNode); lok && leftBinary.Operator == lexer.DISJ {
+		if rightChain, rok := rGroup.Expr.(*ast.ChainNode); rok && rightChain.Operator == lexer.DISJ {
 			if result, resolved := r.applyMixedResolution(leftBinary, rightChain); resolved {
 				return result, nil
 			}
 		}
 	}
 
-	if leftChain, lok := lGroup.Expr.(*ast.ChainNode); lok {
-		if rightBinary, rok := rGroup.Expr.(*ast.BinaryNode); rok {
+	if leftChain, lok := lGroup.Expr.(*ast.ChainNode); lok && leftChain.Operator == lexer.DISJ {
+		if rightBinary, rok := rGroup.Expr.(*ast.BinaryNode); rok && rightBinary.Operator == lexer.DISJ {
 			if result, resolved := r.applyMixedResolution(rightBinary, leftChain); resolved {
 				return result, nil
 			}

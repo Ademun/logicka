@@ -1,4 +1,4 @@
-package complex
+package advanced
 
 import (
 	"logicka/lib/ast"
