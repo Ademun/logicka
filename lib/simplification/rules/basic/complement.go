@@ -6,17 +6,17 @@ import (
 	"logicka/lib/simplification/rules/base"
 )
 
-type NegationRule struct {
+type ComplementRule struct {
 	base.BaseRule
 }
 
-func NewNegationRule() *NegationRule {
-	return &NegationRule{
-		BaseRule: *base.NewBaseRule("Negation law"),
+func NewComplementRule() *ComplementRule {
+	return &ComplementRule{
+		BaseRule: *base.NewBaseRule("Complement law"),
 	}
 }
 
-func (r *NegationRule) CanApply(node ast.ASTNode) bool {
+func (r *ComplementRule) CanApply(node ast.ASTNode) bool {
 	binary, ok := node.(*ast.BinaryNode)
 	if !ok {
 		return false
@@ -25,27 +25,27 @@ func (r *NegationRule) CanApply(node ast.ASTNode) bool {
 	return binary.Operator == lexer.CONJ || binary.Operator == lexer.DISJ
 }
 
-func (r *NegationRule) Apply(node ast.ASTNode) (ast.ASTNode, error) {
+func (r *ComplementRule) Apply(node ast.ASTNode) (ast.ASTNode, error) {
 	binary := node.(*ast.BinaryNode)
 
 	switch binary.Operator {
 	case lexer.CONJ:
-		return r.applyConjunctionNegation(binary)
+		return r.applyConjunctionComplement(binary)
 	case lexer.DISJ:
-		return r.applyDisjunctionNegation(binary)
+		return r.applyDisjunctionComplement(binary)
 	default:
 		return node, nil
 	}
 }
 
-func (r *NegationRule) applyConjunctionNegation(node *ast.BinaryNode) (ast.ASTNode, error) {
+func (r *ComplementRule) applyConjunctionComplement(node *ast.BinaryNode) (ast.ASTNode, error) {
 	if ast.IsNegationOf(node.Left, node.Right) || ast.IsNegationOf(node.Right, node.Left) {
 		return ast.NewLiteralNode(false), nil
 	}
 	return node, nil
 }
 
-func (r *NegationRule) applyDisjunctionNegation(node *ast.BinaryNode) (ast.ASTNode, error) {
+func (r *ComplementRule) applyDisjunctionComplement(node *ast.BinaryNode) (ast.ASTNode, error) {
 	if ast.IsNegationOf(node.Left, node.Right) || ast.IsNegationOf(node.Right, node.Left) {
 		return ast.NewLiteralNode(true), nil
 	}
