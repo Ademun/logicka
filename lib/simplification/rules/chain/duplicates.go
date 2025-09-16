@@ -3,7 +3,6 @@ package chain
 import (
 	"logicka/lib/ast"
 	"logicka/lib/simplification/rules/base"
-	"slices"
 )
 
 type DuplicatesRule struct {
@@ -37,7 +36,20 @@ func (r *DuplicatesRule) Apply(node ast.ASTNode) (ast.ASTNode, error) {
 }
 
 func collectUniqueOperands(operands []ast.ASTNode) []ast.ASTNode {
-	return slices.CompactFunc(operands, func(a, b ast.ASTNode) bool {
-		return a.Equals(b)
-	})
+	unique := make(map[uint64]ast.ASTNode, len(operands)/2)
+
+	for _, operand := range operands {
+		hash := operand.Hash()
+		if _, ok := unique[hash]; ok {
+			continue
+		}
+		unique[hash] = operand
+	}
+
+	result := make([]ast.ASTNode, 0, len(unique))
+	for _, operand := range unique {
+		result = append(result, operand)
+	}
+
+	return result
 }
