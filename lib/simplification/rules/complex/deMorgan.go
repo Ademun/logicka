@@ -24,7 +24,7 @@ func (r *DeMorganRule) CanApply(node ast.ASTNode) bool {
 
 	_, ok = unary.Operand.(*ast.GroupingNode)
 
-	return unary.Operator != lexer.NEG && ok
+	return unary.Operator == lexer.NEG && ok
 }
 
 func (r *DeMorganRule) Apply(node ast.ASTNode) (ast.ASTNode, error) {
