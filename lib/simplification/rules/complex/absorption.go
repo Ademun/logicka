@@ -47,34 +47,73 @@ func (r *AbsorptionRule) Apply(node ast.ASTNode) (ast.ASTNode, error) {
 }
 
 func (r *AbsorptionRule) applyAbsorption(operator lexer.BooleanTokenType, left, right ast.ASTNode) (ast.ASTNode, bool) {
-	flippedOperator := flipOperator(operator)
-
 	grouping, ok := right.(*ast.GroupingNode)
 	if !ok {
 		return ast.NewBinaryNode(operator, left, right), false
 	}
 
 	if binary, ok := grouping.Expr.(*ast.BinaryNode); ok {
-		if binary.Operator != flippedOperator {
-			return ast.NewBinaryNode(operator, left, right), false
-		}
-
-		if left.Equals(binary.Left) || right.Equals(binary.Right) {
-			return left, true
-		}
-
-		return ast.NewBinaryNode(operator, left, right), false
+		return r.applyBinaryAbsorption(operator, left, right, binary)
 	}
 
 	if chain, ok := grouping.Expr.(*ast.ChainNode); ok {
-		if chain.Operator != flippedOperator {
-			return ast.NewBinaryNode(operator, left, right), false
-		}
-
-		if chain.Contains(left) {
-			return left, true
-		}
+		return r.applyChainAbsorption(operator, left, right, chain)
 	}
 
 	return ast.NewBinaryNode(operator, left, right), true
+}
+
+func (r *AbsorptionRule) applyBinaryAbsorption(operator lexer.BooleanTokenType, left ast.ASTNode, right ast.ASTNode, binary *ast.BinaryNode) (ast.ASTNode, bool) {
+	flippedOperator := flipOperator(operator)
+	if binary.Operator != flippedOperator {
+		return ast.NewBinaryNode(operator, left, right), false
+	}
+
+	if left.Equals(binary.Left) || right.Equals(binary.Right) {
+		return left, true
+	}
+
+	if binary.Left.Equals(ast.NewUnaryNode(lexer.NEG, left)) {
+		return ast.NewBinaryNode(operator, left, ast.NewGroupingNode(binary.Right)), true
+	}
+	if binary.Right.Equals(ast.NewUnaryNode(lexer.NEG, left)) {
+		return ast.NewBinaryNode(operator, left, ast.NewGroupingNode(binary.Left)), true
+	}
+
+	if neg, ok := left.(*ast.UnaryNode); ok && neg.Operator == lexer.NEG {
+		if neg.Operand.Equals(binary.Left) {
+			return ast.NewBinaryNode(operator, neg, binary.Right), true
+		}
+
+		if neg.Operand.Equals(binary.Right) {
+			return ast.NewBinaryNode(operator, neg, binary.Left), true
+		}
+	}
+
+	return ast.NewBinaryNode(operator, left, right), false
+}
+
+func (r *AbsorptionRule) applyChainAbsorption(operator lexer.BooleanTokenType, left ast.ASTNode, right ast.ASTNode, chain *ast.ChainNode) (ast.ASTNode, bool) {
+	flippedOperator := flipOperator(operator)
+	if chain.Operator != flippedOperator {
+		return ast.NewBinaryNode(operator, left, right), false
+	}
+
+	if chain.Contains(left) {
+		return left, true
+	}
+
+	if neg := ast.NewUnaryNode(lexer.NEG, left); chain.Contains(neg) {
+		chain.Remove(neg)
+		return ast.NewBinaryNode(operator, left, ast.NewGroupingNode(chain)), true
+	}
+
+	if neg, ok := left.(*ast.UnaryNode); ok && neg.Operator == lexer.NEG {
+		if chain.Contains(neg.Operand) {
+			chain.Remove(neg.Operand)
+			return ast.NewBinaryNode(operator, left, ast.NewGroupingNode(chain)), true
+		}
+	}
+
+	return nil, false
 }
