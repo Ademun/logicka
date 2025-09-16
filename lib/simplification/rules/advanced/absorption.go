@@ -12,7 +12,7 @@ type AbsorptionRule struct {
 
 func NewAbsorptionRule() *AbsorptionRule {
 	return &AbsorptionRule{
-		BaseRule: *base.NewBaseRule("Absorption law"),
+		BaseRule: *base.NewBaseRule("Закон поглощения"),
 	}
 }
 

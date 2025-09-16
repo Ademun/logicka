@@ -12,7 +12,7 @@ type LiteralNegationRule struct {
 
 func NewLiteralNegationRule() *LiteralNegationRule {
 	return &LiteralNegationRule{
-		BaseRule: *base.NewBaseRule("LiteralNegation law"),
+		BaseRule: *base.NewBaseRule("Отрицание константы"),
 	}
 }
 

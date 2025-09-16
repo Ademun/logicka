@@ -12,7 +12,7 @@ type DoubleNegationRule struct {
 
 func NewDoubleNegationRule() *DoubleNegationRule {
 	return &DoubleNegationRule{
-		BaseRule: *base.NewBaseRule("DoubleNegation law"),
+		BaseRule: *base.NewBaseRule("Закон двойного отрицания"),
 	}
 }
 

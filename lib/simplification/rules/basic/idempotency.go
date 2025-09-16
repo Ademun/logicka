@@ -12,7 +12,7 @@ type IdempotencyRule struct {
 
 func NewIdempotencyRule() *IdempotencyRule {
 	return &IdempotencyRule{
-		BaseRule: *base.NewBaseRule("Idempotency law"),
+		BaseRule: *base.NewBaseRule("Закон идемпотентности"),
 	}
 }
 

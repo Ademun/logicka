@@ -33,10 +33,19 @@ func (s *Simplifier) Simplify(node ast.ASTNode) (ast.ASTNode, error) {
 		if err != nil {
 			return nil, err
 		}
-		fmt.Println("Next", current, next)
+		fmt.Println("Было:\n", current, "\n", "Стало:\n", next)
 		if current.Equals(next) {
 			fmt.Println("Converged on iteration", i)
 			return current, nil
+		}
+		for _, ruleSet := range s.ruleSets {
+			for _, rule := range ruleSet.Rules {
+				records := rule.Applications()
+				for _, record := range records {
+					fmt.Println(record.String())
+				}
+				rule.ClearApplications()
+			}
 		}
 		current = next
 	}
@@ -80,6 +89,13 @@ func (s *Simplifier) VisitBinary(node *ast.BinaryNode) (ast.ASTNode, error) {
 		return nil, err
 	}
 
+	if lch, ok := left.(*ast.ChainNode); ok {
+		left = ast.NewGroupingNode(lch)
+	}
+	if rch, ok := right.(*ast.ChainNode); ok {
+		right = ast.NewGroupingNode(rch)
+	}
+
 	current := ast.NewBinaryNode(node.Operator, left, right)
 
 	return s.applyAllRuleSets(current)
@@ -99,12 +115,21 @@ func (s *Simplifier) VisitChain(node *ast.ChainNode) (ast.ASTNode, error) {
 		simplified = append(simplified, simplifiedOperand)
 	}
 
-	current := &ast.ChainNode{
+	current, err := s.applyAllRuleSets(&ast.ChainNode{
 		Operator: node.Operator,
 		Operands: simplified,
+	})
+	if err != nil {
+		return nil, err
 	}
 
-	simplifiedChain, err := s.simplifyChain(current)
+	if binary, ok := current.(*ast.BinaryNode); ok {
+		fmt.Println("Binary:", binary)
+		return s.applyAllRuleSets(binary)
+	}
+
+	simplifiedChain, err := s.simplifyChain(current.(*ast.ChainNode))
+
 	if err != nil {
 		return nil, err
 	}
@@ -121,6 +146,7 @@ Outer:
 			other := operands[j]
 			combination := ast.NewBinaryNode(node.Operator, one, other)
 			simplifiedCombination, err := Accept[ast.ASTNode](combination, s)
+			fmt.Println(combination, simplifiedCombination)
 			if err != nil {
 				return nil, err
 			}

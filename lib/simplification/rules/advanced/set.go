@@ -6,7 +6,6 @@ func CreateAdvancedRules() []base.Rule {
 	return []base.Rule{
 		NewAbsorptionRule(),
 		NewDeMorganRule(),
-		NewResolutionRule(),
 	}
 }
 

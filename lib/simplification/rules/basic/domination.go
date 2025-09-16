@@ -12,7 +12,7 @@ type DominationRule struct {
 
 func NewDominationRule() *DominationRule {
 	return &DominationRule{
-		BaseRule: *base.NewBaseRule("Domination law"),
+		BaseRule: *base.NewBaseRule("Закон исключённого третьего"),
 	}
 }
 

@@ -12,7 +12,7 @@ type UnwrapBinaryRule struct {
 
 func NewUnwrapBinaryRule() *UnwrapBinaryRule {
 	return &UnwrapBinaryRule{
-		BaseRule: *base.NewBaseRule("UnwrapBinary law"),
+		BaseRule: *base.NewBaseRule("Объединение в цепочку операторов"),
 	}
 }
 

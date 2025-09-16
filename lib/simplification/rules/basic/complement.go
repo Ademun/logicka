@@ -12,7 +12,7 @@ type ComplementRule struct {
 
 func NewComplementRule() *ComplementRule {
 	return &ComplementRule{
-		BaseRule: *base.NewBaseRule("Complement law"),
+		BaseRule: *base.NewBaseRule("Закон дополнения"),
 	}
 }
 

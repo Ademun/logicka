@@ -1,7 +1,6 @@
 package base
 
 import (
-	"fmt"
 	"logicka/lib/ast"
 )
 
@@ -30,8 +29,10 @@ func (rs *RuleSet) Apply(node ast.ASTNode) (ast.ASTNode, error) {
 		if simplified.Equals(current) {
 			continue
 		}
-		fmt.Println("Simplified", current, simplified)
 
+		if rule.Name() != "Объединение в цепочку операторов" {
+			rule.RecordApplication("Описание", current.String(), simplified.String())
+		}
 		current = simplified
 		appliedRules = append(appliedRules, rule)
 	}

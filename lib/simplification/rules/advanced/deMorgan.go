@@ -12,7 +12,7 @@ type DeMorganRule struct {
 
 func NewDeMorganRule() *DeMorganRule {
 	return &DeMorganRule{
-		BaseRule: *base.NewBaseRule("DeMorgan law"),
+		BaseRule: *base.NewBaseRule("Закон Де Моргана"),
 	}
 }
 

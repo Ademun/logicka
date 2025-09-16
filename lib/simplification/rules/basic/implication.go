@@ -12,7 +12,7 @@ type ImplicationRule struct {
 
 func NewImplicationRule() *ImplicationRule {
 	return &ImplicationRule{
-		BaseRule: *base.NewBaseRule("Implication law"),
+		BaseRule: *base.NewBaseRule("Упрощение импликации"),
 	}
 }
 

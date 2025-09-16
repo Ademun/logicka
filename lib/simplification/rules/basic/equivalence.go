@@ -12,7 +12,7 @@ type EquivalenceRule struct {
 
 func NewEquivalenceRule() *EquivalenceRule {
 	return &EquivalenceRule{
-		BaseRule: *base.NewBaseRule("Equivalence law"),
+		BaseRule: *base.NewBaseRule("Упрощение эквивалентности"),
 	}
 }
 

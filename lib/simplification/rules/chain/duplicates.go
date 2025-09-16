@@ -11,7 +11,7 @@ type DuplicatesRule struct {
 
 func NewDuplicatesRule() *DuplicatesRule {
 	return &DuplicatesRule{
-		BaseRule: *base.NewBaseRule("Duplicates law"),
+		BaseRule: *base.NewBaseRule("Сокращение дубликатов"),
 	}
 }
 

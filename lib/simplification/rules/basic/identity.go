@@ -12,7 +12,7 @@ type IdentityRule struct {
 
 func NewIdentityRule() *IdentityRule {
 	return &IdentityRule{
-		BaseRule: *base.NewBaseRule("Identity law"),
+		BaseRule: *base.NewBaseRule("Закон тождественности"),
 	}
 }
 
