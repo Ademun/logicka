@@ -110,10 +110,8 @@ func (s *Simplifier) VisitChain(node *ast.ChainNode) (ast.ASTNode, error) {
 		simplified = append(simplified, simplifiedOperand)
 	}
 
-	current, err := s.applyAllRuleSets(&ast.ChainNode{
-		Operator: node.Operator,
-		Operands: simplified,
-	})
+	current, err := s.applyAllRuleSets(ast.NewChainNode(node.Operator, simplified...))
+	fmt.Println(current, node.Operands)
 	if err != nil {
 		return nil, err
 	}

@@ -27,7 +27,7 @@ func (r *UnwrapBinaryRule) Apply(node ast.ASTNode) (ast.ASTNode, error) {
 	if len(operands) == 2 {
 		return binary, nil
 	}
-	return ast.NewChainNode(binary.Operator, operands...)
+	return ast.NewChainNode(binary.Operator, operands...), nil
 }
 
 func canFlatten(node *ast.BinaryNode) bool {

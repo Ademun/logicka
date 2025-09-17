@@ -31,7 +31,7 @@ func (r *DuplicatesRule) Apply(node ast.ASTNode) (ast.ASTNode, error) {
 	case 2:
 		return ast.NewBinaryNode(chain.Operator, operands[0], operands[1]), nil
 	default:
-		return ast.NewChainNode(chain.Operator, operands...)
+		return ast.NewChainNode(chain.Operator, operands...), nil
 	}
 }
 

@@ -22,7 +22,7 @@ func (n *LiteralNode) Hash() uint64 {
 }
 
 func (n *LiteralNode) Equals(other ASTNode) bool {
-	literal, ok := other.(*VariableNode)
+	literal, ok := other.(*LiteralNode)
 	return ok && n.Hash() == literal.Hash()
 }
 

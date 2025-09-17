@@ -195,14 +195,14 @@ func (p *Parser) parseQuant() (ast.ASTNode, error) {
 				return nil, err
 			}
 
-			return &ast.QuantifierNode{Type: quantType, Variable: variable, Domain: nil}, nil
+			return &ast.QuantifierNode{Type: quantType, Variable: nil, Domain: variable}, nil
 		} else {
 			// Simple quantifier: ("A" | "E") <primary>
-			body, err := p.parsePrimary()
+			_, err := p.parsePrimary()
 			if err != nil {
 				return nil, err
 			}
-			return &ast.QuantifierNode{Type: quantType, Variable: "", Domain: body}, nil
+			return &ast.QuantifierNode{Type: quantType, Variable: nil, Domain: "body"}, nil
 		}
 	}
 	return p.parsePrimary()

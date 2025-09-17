@@ -65,8 +65,8 @@ func (n *ChainNode) Contains(node ASTNode) bool {
 	return slices.ContainsFunc(n.Operands, node.Equals)
 }
 
-func (n *ChainNode) Add(node ASTNode) {
-	n.Operands = append(n.Operands, node)
+func (n *ChainNode) Add(nodes ...ASTNode) {
+	n.Operands = append(n.Operands, nodes...)
 }
 
 func (n *ChainNode) Remove(node ASTNode) {
