@@ -1,6 +1,7 @@
 package chain
 
 import (
+	"fmt"
 	"logicka/lib/ast"
 	"logicka/lib/simplification/rules/base"
 )
@@ -23,6 +24,7 @@ func (r *DuplicatesRule) CanApply(node ast.ASTNode) bool {
 
 func (r *DuplicatesRule) Apply(node ast.ASTNode) (ast.ASTNode, error) {
 	chain := node.(*ast.ChainNode)
+	fmt.Println("Operands", chain.Operands)
 	operands := collectUniqueOperands(chain.Operands)
 
 	switch len(operands) {

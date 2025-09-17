@@ -11,10 +11,11 @@ import (
 
 type Simplifier struct {
 	ruleSets []*base.RuleSet
+	log      base.ApplicationLogger
 }
 
 func NewSimplifier() *Simplifier {
-	return &Simplifier{ruleSets: make([]*base.RuleSet, 0)}
+	return &Simplifier{ruleSets: make([]*base.RuleSet, 0), log: base.NewBasicApplicationLogger()}
 }
 
 func (s *Simplifier) AddRuleSet(ruleSet *base.RuleSet) {
@@ -38,10 +39,8 @@ func (s *Simplifier) Simplify(node ast.ASTNode) (ast.ASTNode, error) {
 			fmt.Println("Converged on iteration", i)
 			return current, nil
 		}
-		for _, ruleSet := range s.ruleSets {
-			records := ruleSet.String(false, true)
-			fmt.Println(records)
-		}
+		fmt.Println(s.log.String(false))
+		s.log.Clear()
 		current = next
 	}
 
@@ -144,6 +143,7 @@ Outer:
 			}
 			if !combination.Equals(simplifiedCombination) {
 				if t, ok := simplifiedCombination.(ast.Traversable); ok && len(t.Children()) > 1 {
+					fmt.Println("Children", t.Children())
 					newOperands = append(newOperands, t.Children()...)
 				} else {
 					newOperands = append(newOperands, simplifiedCombination)
@@ -197,7 +197,7 @@ func (s *Simplifier) applyAllRuleSets(node ast.ASTNode) (ast.ASTNode, error) {
 	current := node
 
 	for _, ruleSet := range s.ruleSets {
-		simplified, err := ruleSet.Apply(current)
+		simplified, err := ruleSet.Apply(current, s.log)
 		if err != nil {
 			return nil, fmt.Errorf("error in set")
 		}
