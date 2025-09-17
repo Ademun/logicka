@@ -183,10 +183,10 @@ func (b *BinaryNode) Contains(node ASTNode) bool {
 }
 
 func (b *BinaryNode) String() string {
-	return fmt.Sprintf("%s %s %s",
+	return "{" + fmt.Sprintf("%s %s %s",
 		b.Left.String(),
 		b.Operator.String(),
-		b.Right.String())
+		b.Right.String()) + "}"
 }
 
 func (b *BinaryNode) Hash() uint64 {
@@ -269,7 +269,7 @@ func (c *ChainNode) String() string {
 		}
 	}
 
-	return strings.Join(parts, " "+c.Operator.String()+" ")
+	return "[" + strings.Join(parts, " "+c.Operator.String()+" ") + "]"
 }
 
 func (c *ChainNode) Hash() uint64 {
