@@ -39,13 +39,8 @@ func (s *Simplifier) Simplify(node ast.ASTNode) (ast.ASTNode, error) {
 			return current, nil
 		}
 		for _, ruleSet := range s.ruleSets {
-			for _, rule := range ruleSet.Rules {
-				records := rule.Applications()
-				for _, record := range records {
-					fmt.Println(record.String())
-				}
-				rule.ClearApplications()
-			}
+			records := ruleSet.String(false, true)
+			fmt.Println(records)
 		}
 		current = next
 	}
@@ -146,7 +141,6 @@ Outer:
 			other := operands[j]
 			combination := ast.NewBinaryNode(node.Operator, one, other)
 			simplifiedCombination, err := Accept[ast.ASTNode](combination, s)
-			fmt.Println(combination, simplifiedCombination)
 			if err != nil {
 				return nil, err
 			}

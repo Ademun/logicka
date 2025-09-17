@@ -269,7 +269,7 @@ func (c *ChainNode) String() string {
 		}
 	}
 
-	return "[" + strings.Join(parts, " "+c.Operator.String()+" ") + "]"
+	return strings.Join(parts, " "+c.Operator.String()+" ")
 }
 
 func (c *ChainNode) Hash() uint64 {

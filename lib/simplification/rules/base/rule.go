@@ -3,7 +3,6 @@ package base
 import (
 	"fmt"
 	"logicka/lib/ast"
-	"strings"
 )
 
 type Rule interface {
@@ -23,23 +22,16 @@ type RuleApplication struct {
 }
 
 func (ra RuleApplication) String() string {
+	return fmt.Sprintf("%s => %s\n", ra.Before, ra.After)
+}
+
+func (ra RuleApplication) VerboseString() string {
 	return fmt.Sprintf("Правило: %s\nОписание: %s\nДо:\n%s\nПосле:\n%s\n",
 		ra.Name,
 		ra.Description,
-		indent(ra.Before),
-		indent(ra.After),
+		ra.Before,
+		ra.After,
 	)
-}
-
-func indent(s string) string {
-	if s == "" {
-		return "  <empty>"
-	}
-	lines := strings.Split(s, "\n")
-	for i, line := range lines {
-		lines[i] = "  " + line
-	}
-	return strings.Join(lines, "\n")
 }
 
 type BaseRule struct {

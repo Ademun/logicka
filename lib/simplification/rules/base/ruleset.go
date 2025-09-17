@@ -2,6 +2,8 @@ package base
 
 import (
 	"logicka/lib/ast"
+	"slices"
+	"strings"
 )
 
 type RuleSet struct {
@@ -38,4 +40,25 @@ func (rs *RuleSet) Apply(node ast.ASTNode) (ast.ASTNode, error) {
 	}
 
 	return current, nil
+}
+
+func (rs *RuleSet) String(verbose bool, reset bool) string {
+	result := strings.Builder{}
+	for _, rule := range rs.Rules {
+		records := slices.Clone(rule.Applications())
+		if len(records) == 0 {
+			continue
+		}
+		for _, record := range records {
+			if verbose {
+				result.WriteString(record.VerboseString())
+			} else {
+				result.WriteString(record.String())
+			}
+		}
+		if reset {
+			rule.ClearApplications()
+		}
+	}
+	return result.String()
 }
