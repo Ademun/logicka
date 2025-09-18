@@ -1,6 +1,7 @@
 package chain
 
 import (
+	"fmt"
 	"logicka/lib/ast"
 	"logicka/lib/simplification/rules/base"
 	"slices"
@@ -33,5 +34,6 @@ func (r *UnwrapInternalsRule) Apply(node ast.ASTNode) (ast.ASTNode, error) {
 			chain.Add(opBinary.Children()...)
 		}
 	}
+	fmt.Println("exited", chain.Operands)
 	return chain, nil
 }

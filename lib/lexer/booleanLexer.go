@@ -35,13 +35,13 @@ func (t BooleanTokenType) String() string {
 	case IMPL:
 		return "→"
 	case EQUIV:
-		return "~"
+		return "↔"
 	case CONJ:
 		return "∧"
 	case DISJ:
 		return "∨"
 	case NEG:
-		return "!"
+		return "¬"
 	case PRED:
 		return "PREDICATE"
 	case VAR:
