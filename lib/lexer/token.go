@@ -1,60 +1,156 @@
 package lexer
 
-import "regexp"
+import (
+	"fmt"
+	"regexp"
+)
 
 type TokenType int
 
 const (
-	ER_INVALID TokenType = iota
+	ErInvalid TokenType = iota
 	// Global syntax tokens
-	GL_LEFT_PARENTHESIS
-	GL_RIGHT_PARENTHESIS
-	GL_LEFT_BRACE
-	GL_RIGHT_BRACE
-	GL_COMMA
-	GL_BREAK
-	GL_DOT
-	GL_PIPE
-	GL_ASSIGNMENT
-	GL_IDENTIFIER
+	GlLeftParenthesis
+	GlRightParenthesis
+	GlLeftBrace
+	GlRightBrace
+	GlComma
+	GlSemicolon
+	GlDot
+	GlPipe
+	GlAssignment
+	GlIdentifier
 	// Boolean syntax tokens
-	BL_CONJUNCTION
-	BL_DISJUNCTION
-	BL_NEGATION
-	BL_EQUIVALENCE
-	BL_IMPLICATION
-	BL_FORALL
-	BL_EXISTS
+	BlConjunction
+	BlDisjunction
+	BlNegation
+	BlEquivalence
+	BlImplication
+	BlForall
+	BlExists
 	// Arithmetic syntax tokens
-	AR_ADDITION
-	AR_SUBSTRACTION
-	AR_MULTIPLICATION
-	AR_DIVISION
-	AR_MODULUS
-	AR_POWER
+	ArAddition
+	ArSubtraction
+	ArMultiplication
+	ArDivision
+	ArModulus
+	ArPower
 	// Conditional syntax tokens
-	CD_EQUALS
-	CD_NOT_EQUALS
-	CD_GREATER
-	CD_LESS
-	CD_GREATER_OR_EQUAL
-	CD_LESS_OR_EQUAL
-	CD_IF
-	CD_THEN
-	CD_ELSE
+	CdEquals
+	CdNotEquals
+	CdGreater
+	CdLess
+	CdGreaterOrEqual
+	CdLessOrEqual
+	CdIf
+	CdThen
+	CdElse
 	// Set syntax tockens
-	ST_ELEMENT_OF
-	ST_NOT_ELEMENT_OF
-	ST_UNION
-	ST_INTERSECTION
-	ST_SUBSET
-	ST_SUPERSET
+	StElementOf
+	StNotElementOf
+	StUnion
+	StIntersection
+	StSubset
+	StSuperset
 	// Literal syntax tokens
-	LT_TRUE
-	LT_FALSE
-	LT_NUMBER
+	LtTrue
+	LtFalse
+	LtNumber
 	EOF
 )
+
+func (tt TokenType) String() string {
+	switch tt {
+	case ErInvalid:
+		return "ErInvalid"
+	case GlLeftParenthesis:
+		return "GlLeftParenthesis"
+	case GlRightParenthesis:
+		return "GlRightParenthesis"
+	case GlLeftBrace:
+		return "GlLeftBrace"
+	case GlRightBrace:
+		return "GlRightBrace"
+	case GlComma:
+		return "GlComma"
+	case GlSemicolon:
+		return "GlSemicolon"
+	case GlDot:
+		return "GlDot"
+	case GlPipe:
+		return "GlPipe"
+	case GlAssignment:
+		return "GlAssignment"
+	case GlIdentifier:
+		return "GlIdentifier"
+	case BlConjunction:
+		return "BlConjunction"
+	case BlDisjunction:
+		return "BlDisjunction"
+	case BlNegation:
+		return "BlNegation"
+	case BlEquivalence:
+		return "BlEquivalence"
+	case BlImplication:
+		return "BlImplication"
+	case BlForall:
+		return "BlForall"
+	case BlExists:
+		return "BlExists"
+	case ArAddition:
+		return "ArAddition"
+	case ArSubtraction:
+		return "ArSubtraction"
+	case ArMultiplication:
+		return "ArMultiplication"
+	case ArDivision:
+		return "ArDivision"
+	case ArModulus:
+		return "ArModulus"
+	case ArPower:
+		return "ArPower"
+	case CdEquals:
+		return "CdEquals"
+	case CdNotEquals:
+		return "CdNotEquals"
+	case CdGreater:
+		return "CdGreater"
+	case CdLess:
+		return "CdLess"
+	case CdGreaterOrEqual:
+		return "CdGreaterOrEqual"
+	case CdLessOrEqual:
+		return "CdLessOrEqual"
+	case CdIf:
+		return "CdIf"
+	case CdThen:
+		return "CdThen"
+	case CdElse:
+		return "CdElse"
+	case StElementOf:
+		return "StElementOf"
+	case StNotElementOf:
+		return "StNotElementOf"
+	case StUnion:
+		return "StUnion"
+	case StIntersection:
+		return "StIntersection"
+	case StSubset:
+		return "StSubset"
+	case StSuperset:
+		return "StSuperset"
+	case LtTrue:
+		return "LtTrue"
+	case LtFalse:
+		return "LtFalse"
+	case LtNumber:
+		return "LtNumber"
+	case EOF:
+		return "EOF"
+	default:
+		return fmt.Sprintf("TokenType(%d)", int(tt))
+	}
+}
 
 type Token struct {
 	Type  TokenType
@@ -71,27 +167,27 @@ func NewToken(ttype TokenType, value string, pos int) *Token {
 }
 
 var symbolTokens = map[string]TokenType{
-	"(":  GL_LEFT_PARENTHESIS,
-	")":  GL_RIGHT_PARENTHESIS,
-	"{":  GL_LEFT_BRACE,
-	"}":  GL_RIGHT_BRACE,
-	",":  GL_COMMA,
-	";":  GL_BREAK,
-	".":  GL_DOT,
-	"|":  GL_PIPE,
-	":=": GL_ASSIGNMENT,
-	"==": CD_EQUALS,
-	"!=": CD_NOT_EQUALS,
-	"+":  AR_ADDITION,
-	"-":  AR_SUBSTRACTION,
-	"*":  AR_MULTIPLICATION,
-	"/":  AR_DIVISION,
-	"%":  AR_MODULUS,
-	"^":  AR_POWER,
-	">":  CD_GREATER,
-	"<":  CD_LESS,
-	">=": CD_GREATER_OR_EQUAL,
-	"<=": CD_LESS_OR_EQUAL,
+	"(":  GlLeftParenthesis,
+	")":  GlRightParenthesis,
+	"{":  GlLeftBrace,
+	"}":  GlRightBrace,
+	",":  GlComma,
+	";":  GlSemicolon,
+	".":  GlDot,
+	"|":  GlPipe,
+	":=": GlAssignment,
+	"==": CdEquals,
+	"!=": CdNotEquals,
+	"+":  ArAddition,
+	"-":  ArSubtraction,
+	"*":  ArMultiplication,
+	"/":  ArDivision,
+	"%":  ArModulus,
+	"^":  ArPower,
+	">":  CdGreater,
+	"<":  CdLess,
+	">=": CdGreaterOrEqual,
+	"<=": CdLessOrEqual,
 }
 
 var maxSymbolLength int
@@ -106,24 +202,24 @@ func init() {
 }
 
 var keywordTokens = map[string]TokenType{
-	"conjunction":    BL_CONJUNCTION,
-	"disjunction":    BL_DISJUNCTION,
-	"negation":       BL_NEGATION,
-	"equivalence":    BL_EQUIVALENCE,
-	"implication":    BL_IMPLICATION,
-	"forall":         BL_FORALL,
-	"exists":         BL_EXISTS,
-	"element_of":     ST_ELEMENT_OF,
-	"not_element_of": ST_NOT_ELEMENT_OF,
-	"union":          ST_UNION,
-	"intersection":   ST_INTERSECTION,
-	"subset":         ST_SUBSET,
-	"superset":       ST_SUPERSET,
-	"if":             CD_IF,
-	"then":           CD_THEN,
-	"else":           CD_ELSE,
-	"T":              LT_TRUE,
-	"F":              LT_FALSE,
+	"conjunction":    BlConjunction,
+	"disjunction":    BlDisjunction,
+	"negation":       BlNegation,
+	"equivalence":    BlEquivalence,
+	"implication":    BlImplication,
+	"forall":         BlForall,
+	"exists":         BlExists,
+	"element_of":     StElementOf,
+	"not_element_of": StNotElementOf,
+	"union":          StUnion,
+	"intersection":   StIntersection,
+	"subset":         StSubset,
+	"superset":       StSuperset,
+	"if":             CdIf,
+	"then":           CdThen,
+	"else":           CdElse,
+	"T":              LtTrue,
+	"F":              LtFalse,
 }
 
 var (

@@ -11,37 +11,37 @@ import (
 
 type Simplifier struct {
 	ruleSets []*base.RuleSet
-	log      base.ApplicationLogger
 }
 
 func NewSimplifier() *Simplifier {
-	return &Simplifier{ruleSets: make([]*base.RuleSet, 0), log: base.NewBasicApplicationLogger()}
+	return &Simplifier{ruleSets: make([]*base.RuleSet, 0)}
 }
 
 func (s *Simplifier) AddRuleSet(ruleSet *base.RuleSet) {
 	s.ruleSets = append(s.ruleSets, ruleSet)
 }
-
 func (s *Simplifier) Simplify(node ast.ASTNode) (ast.ASTNode, error) {
 	if node == nil {
 		return nil, fmt.Errorf("empty node")
 	}
 
-	s.log.Clear()
 	current := node
 
-	for range 100 {
+	for i := range 100 {
+		fmt.Println("Iteration", i)
 		next, err := Accept[ast.ASTNode](current, s)
 		if err != nil {
 			return nil, err
 		}
-		next = s.tryUnwrap(next)
+		fmt.Println("Было:\n", current, "\n", "Стало:\n", next)
 		if current.Equals(next) {
-			s.log.LogApplication("Итоговое выражение", "Описание", current.String(), next.String())
-			fmt.Println(s.log.String())
+			fmt.Println("Converged on iteration", i)
 			return current, nil
 		}
-		s.log.LogApplication("Выражение после перобразований", "Описание", current.String(), next.String())
+		for _, ruleSet := range s.ruleSets {
+			records := ruleSet.String(false, true)
+			fmt.Println(records)
+		}
 		current = next
 	}
 
@@ -60,7 +60,13 @@ func (s *Simplifier) VisitGrouping(node *ast.GroupingNode) (ast.ASTNode, error) 
 		return nil, err
 	}
 
-	return s.tryUnwrap(simplified), nil
+	if s.canRemoveGrouping(simplified) {
+		if grouping, ok := simplified.(*ast.GroupingNode); ok {
+			return grouping.Expr, nil
+		}
+	}
+
+	return simplified, nil
 }
 
 func (s *Simplifier) VisitLiteral(node *ast.LiteralNode) (ast.ASTNode, error) {
@@ -78,7 +84,14 @@ func (s *Simplifier) VisitBinary(node *ast.BinaryNode) (ast.ASTNode, error) {
 		return nil, err
 	}
 
-	current := ast.NewBinaryNode(node.Operator, s.tryWrap(left), s.tryWrap(right))
+	if lch, ok := left.(*ast.ChainNode); ok {
+		left = ast.NewGroupingNode(lch)
+	}
+	if rch, ok := right.(*ast.ChainNode); ok {
+		right = ast.NewGroupingNode(rch)
+	}
+
+	current := ast.NewBinaryNode(node.Operator, left, right)
 
 	return s.applyAllRuleSets(current)
 }
@@ -94,15 +107,19 @@ func (s *Simplifier) VisitChain(node *ast.ChainNode) (ast.ASTNode, error) {
 		if err != nil {
 			return nil, err
 		}
-		simplified = append(simplified, s.tryWrap(simplifiedOperand))
+		simplified = append(simplified, simplifiedOperand)
 	}
 
-	current, err := s.applyAllRuleSets(ast.NewChainNode(node.Operator, simplified...))
+	current, err := s.applyAllRuleSets(&ast.ChainNode{
+		Operator: node.Operator,
+		Operands: simplified,
+	})
 	if err != nil {
 		return nil, err
 	}
 
 	if binary, ok := current.(*ast.BinaryNode); ok {
+		fmt.Println("Binary:", binary)
 		return s.applyAllRuleSets(binary)
 	}
 
@@ -182,7 +199,7 @@ func (s *Simplifier) applyAllRuleSets(node ast.ASTNode) (ast.ASTNode, error) {
 	current := node
 
 	for _, ruleSet := range s.ruleSets {
-		simplified, err := ruleSet.Apply(current, s.log)
+		simplified, err := ruleSet.Apply(current)
 		if err != nil {
 			return nil, fmt.Errorf("error in set")
 		}
@@ -193,25 +210,20 @@ func (s *Simplifier) applyAllRuleSets(node ast.ASTNode) (ast.ASTNode, error) {
 	return current, nil
 }
 
-func (s *Simplifier) tryWrap(node ast.ASTNode) ast.ASTNode {
-	switch v := node.(type) {
-	case *ast.BinaryNode, *ast.ChainNode:
-		return ast.NewGroupingNode(v)
-	default:
-		return v
-	}
-}
-
-func (s *Simplifier) tryUnwrap(node ast.ASTNode) ast.ASTNode {
+func (s *Simplifier) canRemoveGrouping(node ast.ASTNode) bool {
 	grouping, ok := node.(*ast.GroupingNode)
 	if !ok {
-		return node
+		return false
 	}
 
-	switch v := grouping.Expr.(type) {
-	case *ast.BinaryNode, *ast.ChainNode:
-		return node
+	switch grouping.Expr.(type) {
+	case *ast.LiteralNode, *ast.VariableNode:
+		return true
+	case *ast.UnaryNode:
+		return true
+	case *ast.GroupingNode:
+		return true
 	default:
-		return v
+		return false
 	}
 }

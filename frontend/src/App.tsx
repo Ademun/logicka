@@ -2,7 +2,7 @@ import {Input} from "@/components/ui/input.tsx";
 import {Button} from "@/components/ui/button.tsx";
 import {useEffect, useState} from "react";
 import type {TruthTableEntry} from "@/types/truthTable.ts";
-import {CalculateTruthTable, ExtractVariables} from "../wailsjs/go/lib/Logicka";
+import {CalculateTruthTable} from "../wailsjs/go/lib/Logicka";
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card.tsx";
 import {Alert} from "./components/ui/alert";
 import {TruthTableDisplay} from "@/components/ui/truthTable.tsx";
@@ -58,23 +58,7 @@ function App() {
       return;
     }
     setError('')
-    extractVars().catch(err => setError(err.message || 'Ошибка при извлечении переменных'))
   }, [logicalExpression]);
-
-  const extractVars = async () => {
-    const vars: string[] = await ExtractVariables(logicalExpression)
-    if (!vars) {
-      setVariables([])
-      return
-    }
-    setVariables(vars)
-    // Сохраняем предыдущие значения для существующих переменных
-    const newValues: Record<string, boolean | null> = {};
-    vars.forEach(v => {
-      newValues[v] = variableValues.hasOwnProperty(v) ? variableValues[v] : null;
-    });
-    setVariableValues(newValues);
-  };
 
   return (
       <div className="container mx-auto p-4 space-y-4 max-w-4xl">

@@ -81,7 +81,7 @@ func (l *Lexer) TryParseNumberToken() *Token {
 	if match := numberRegex.FindString(l.input[l.pos:]); match != "" {
 		start := l.pos
 		l.pos += len(match)
-		return NewToken(LT_NUMBER, match, start)
+		return NewToken(LtNumber, match, start)
 	}
 	return nil
 }
@@ -93,7 +93,7 @@ func (l *Lexer) TryParseIdentifierOrKeywordToken() *Token {
 		if found, ok := keywordTokens[match]; ok {
 			return NewToken(found, match, start)
 		}
-		return NewToken(GL_IDENTIFIER, match, start)
+		return NewToken(GlIdentifier, match, start)
 	}
 	return nil
 }
