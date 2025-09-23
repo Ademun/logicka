@@ -12,6 +12,7 @@ const (
 	GL_LEFT_BRACE
 	GL_RIGHT_BRACE
 	GL_COMMA
+	GL_BREAK
 	GL_DOT
 	GL_PIPE
 	GL_ASSIGNMENT
@@ -52,6 +53,7 @@ const (
 	LT_TRUE
 	LT_FALSE
 	LT_NUMBER
+	EOF
 )
 
 type Token struct {
@@ -74,6 +76,7 @@ var symbolTokens = map[string]TokenType{
 	"{":  GL_LEFT_BRACE,
 	"}":  GL_RIGHT_BRACE,
 	",":  GL_COMMA,
+	";":  GL_BREAK,
 	".":  GL_DOT,
 	"|":  GL_PIPE,
 	":=": GL_ASSIGNMENT,

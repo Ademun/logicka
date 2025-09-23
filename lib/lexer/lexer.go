@@ -53,6 +53,7 @@ func (l *Lexer) Tokenize(input string) ([]*Token, error) {
 
 		return nil, &UnknownSymbolError{symbol: string(l.input[l.pos]), pos: l.pos}
 	}
+	tokens = append(tokens, NewToken(EOF, "eof", l.pos))
 	return tokens, nil
 }
 
