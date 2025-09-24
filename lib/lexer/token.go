@@ -64,85 +64,85 @@ func (tt TokenType) String() string {
 	case ErInvalid:
 		return "ErInvalid"
 	case GlLeftParenthesis:
-		return "GlLeftParenthesis"
+		return "("
 	case GlRightParenthesis:
-		return "GlRightParenthesis"
+		return ")"
 	case GlLeftBrace:
-		return "GlLeftBrace"
+		return "{"
 	case GlRightBrace:
-		return "GlRightBrace"
+		return "}"
 	case GlComma:
-		return "GlComma"
+		return ","
 	case GlSemicolon:
-		return "GlSemicolon"
+		return ";"
 	case GlDot:
-		return "GlDot"
+		return "."
 	case GlPipe:
-		return "GlPipe"
+		return "|"
 	case GlAssignment:
-		return "GlAssignment"
+		return ":="
 	case GlIdentifier:
 		return "GlIdentifier"
 	case BlConjunction:
-		return "BlConjunction"
+		return "⋀"
 	case BlDisjunction:
-		return "BlDisjunction"
+		return "⋁"
 	case BlNegation:
-		return "BlNegation"
+		return "¬"
 	case BlEquivalence:
-		return "BlEquivalence"
+		return "↔"
 	case BlImplication:
-		return "BlImplication"
+		return "→"
 	case BlForall:
-		return "BlForall"
+		return "∀"
 	case BlExists:
-		return "BlExists"
+		return "∃"
 	case ArAddition:
-		return "ArAddition"
+		return "+"
 	case ArSubtraction:
-		return "ArSubtraction"
+		return "-"
 	case ArMultiplication:
-		return "ArMultiplication"
+		return "*"
 	case ArDivision:
-		return "ArDivision"
+		return "/"
 	case ArModulus:
-		return "ArModulus"
+		return "%"
 	case ArPower:
-		return "ArPower"
+		return "^"
 	case CdEquals:
-		return "CdEquals"
+		return "=="
 	case CdNotEquals:
-		return "CdNotEquals"
+		return "!="
 	case CdGreater:
-		return "CdGreater"
+		return ">"
 	case CdLess:
-		return "CdLess"
+		return "<"
 	case CdGreaterOrEqual:
-		return "CdGreaterOrEqual"
+		return ">="
 	case CdLessOrEqual:
-		return "CdLessOrEqual"
+		return "<="
 	case CdIf:
-		return "CdIf"
+		return "if"
 	case CdThen:
-		return "CdThen"
+		return "then"
 	case CdElse:
-		return "CdElse"
+		return "else"
 	case StElementOf:
-		return "StElementOf"
+		return "∈"
 	case StNotElementOf:
-		return "StNotElementOf"
+		return "∉"
 	case StUnion:
-		return "StUnion"
+		return "⋃"
 	case StIntersection:
-		return "StIntersection"
+		return "⋂"
 	case StSubset:
-		return "StSubset"
+		return "⊆"
 	case StSuperset:
-		return "StSuperset"
+		return "⊇"
 	case LtTrue:
-		return "LtTrue"
+		return "T"
 	case LtFalse:
-		return "LtFalse"
+		return "F"
 	case LtNumber:
 		return "LtNumber"
 	case EOF:

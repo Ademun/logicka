@@ -1,7 +1,6 @@
 package parser
 
 import (
-	"fmt"
 	"logicka/lib/ast"
 	"logicka/lib/lexer"
 	"strconv"
@@ -26,7 +25,7 @@ func (p *Parser) parseExpression(minPrecedence Precedence) (ast.Expr, error) {
 			break
 		}
 
-		left, err = infixHandler(p, left, minPrecedence)
+		left, err = infixHandler(p, left, tokenPrecedences.Get(p.current().Type))
 		if err != nil {
 			return nil, err
 		}
@@ -115,7 +114,6 @@ func (p *Parser) handleIdentifier() (ast.Expr, error) {
 	name := p.consume()
 
 	if p.current().Type != lexer.GlLeftParenthesis {
-		fmt.Println("Just a vlaue", p.peek().Type.String())
 		return ast.NewIdentifierExpr(name.Value), nil
 	}
 

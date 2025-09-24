@@ -26,6 +26,7 @@ func (l *Logicka) CalculateTruthTable(expr string, values map[string]bool) (inte
 	}
 
 	litter.Dump(ast)
+	fmt.Println(ast.String())
 
 	return nil, nil
 }
