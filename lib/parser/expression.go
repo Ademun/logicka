@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"fmt"
 	"logicka/lib/ast"
 	"logicka/lib/lexer"
 	"strconv"
@@ -42,7 +43,7 @@ func (p *Parser) handleAssignment(left ast.Expr, precedence Precedence) (ast.Exp
 		return nil, err
 	}
 
-	return ast.NewAssignmentExpr(left, value), nil
+	return ast.NewAssignmentExpr(left, value)
 }
 
 func (p *Parser) handlePrefix() (ast.Expr, error) {
@@ -65,10 +66,47 @@ func (p *Parser) handleInfix(left ast.Expr, precedence Precedence) (ast.Expr, er
 	return ast.NewBinaryExpr(*token, left, right), nil
 }
 
+func (p *Parser) handleStringExpression() (ast.Expr, error) {
+	p.consume()
+
+	body, err := p.parseExpression(PrecedenceDefault)
+	if err != nil {
+		return nil, err
+	}
+	if _, err := p.expect(lexer.GlQuote); err != nil {
+		return nil, err
+	}
+
+	return ast.NewStringExpr(body.String()), nil
+}
+
+func (p *Parser) handleQuantifierExpression() (ast.Expr, error) {
+	token := p.consume()
+	variable, err := p.expect(lexer.GlIdentifier)
+	if err != nil {
+		return nil, err
+	}
+	fmt.Println(variable)
+	var domain ast.Expr
+	if p.current().Type == lexer.StElementOf {
+		p.consume()
+		domain, err = p.handleIdentifier()
+		if err != nil {
+			return nil, err
+		}
+	}
+	body, err := p.parseExpression(PrecedencePrefix)
+	if err != nil {
+		return nil, err
+	}
+
+	return ast.NewQuantifierExpr(token.Type, ast.NewIdentifierExpr(variable.Value), domain, body)
+}
+
 func (p *Parser) handleGroupedExpression() (ast.Expr, error) {
 	p.consume()
 
-	body, err := p.parseExpression(PrecedenceAssignment)
+	body, err := p.parseExpression(PrecedenceDefault)
 	if err != nil {
 		return nil, err
 	}
@@ -128,7 +166,7 @@ func (p *Parser) handleIdentifier() (ast.Expr, error) {
 		if err != nil {
 			return nil, err
 		}
-		return ast.NewFunctionDeclExpr(name.Value, args, body), nil
+		return ast.NewFunctionDeclExpr(name.Value, args, body)
 	}
 
 	return ast.NewFunctionCallExpr(name.Value, args), nil

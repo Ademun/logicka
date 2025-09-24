@@ -54,6 +54,7 @@ var tokenPrecedences = precedenceMap{
 	lexer.LtNumber:          PrecedencePrimary,
 	lexer.LtTrue:            PrecedencePrimary,
 	lexer.LtFalse:           PrecedencePrimary,
+	lexer.GlQuote:           PrecedencePrimary,
 }
 
 func (pm precedenceMap) Get(tokenType lexer.TokenType) Precedence {

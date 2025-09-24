@@ -11,6 +11,16 @@ import (
 type Logicka struct {
 }
 
+/*
+R:= {"h", "k", "d", "j", "a", "i", "b", "g", "c", "f", "e"};
+N:={"d", "g", "a", "b", "i", "j"};
+L:={"c", "b", "g", "e", "f", "i"};
+Q(x) := x element_of N; A(x) := x element_of L;
+P1(x) := Q(x) conjunction A(x);
+P2(x):=Q(x) equivalence A(x);
+P3(x):=Q(x) implication A(x);
+P4(x) := Q(x) disjunction A(x);
+*/
 func (l *Logicka) CalculateTruthTable(expr string, values map[string]bool) (interface{}, error) {
 	lex := lexer.NewLexer()
 	tokens, err := lex.Tokenize(expr)

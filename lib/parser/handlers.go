@@ -77,6 +77,9 @@ func (hr *HandlerRegistry) registerDefaults() {
 		hr.RegisterPrefix(tokenType, (*Parser).handlePrefix)
 	}
 
+	hr.RegisterPrefix(lexer.GlQuote, (*Parser).handleStringExpression)
+	hr.RegisterPrefix(lexer.BlForall, (*Parser).handleQuantifierExpression)
+	hr.RegisterPrefix(lexer.BlExists, (*Parser).handleQuantifierExpression)
 	hr.RegisterPrefix(lexer.GlLeftParenthesis, (*Parser).handleGroupedExpression)
 	hr.RegisterPrefix(lexer.GlLeftBrace, (*Parser).handleBracedExpression)
 	hr.RegisterPrefix(lexer.GlIdentifier, (*Parser).handleIdentifier)

@@ -16,6 +16,7 @@ const (
 	GlRightBrace
 	GlComma
 	GlSemicolon
+	GlQuote
 	GlDot
 	GlPipe
 	GlAssignment
@@ -75,6 +76,8 @@ func (tt TokenType) String() string {
 		return ","
 	case GlSemicolon:
 		return ";"
+	case GlQuote:
+		return "\""
 	case GlDot:
 		return "."
 	case GlPipe:
@@ -173,6 +176,7 @@ var symbolTokens = map[string]TokenType{
 	"}":  GlRightBrace,
 	",":  GlComma,
 	";":  GlSemicolon,
+	"\"": GlQuote,
 	".":  GlDot,
 	"|":  GlPipe,
 	":=": GlAssignment,
