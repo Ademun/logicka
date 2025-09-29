@@ -3,6 +3,7 @@ package ast
 import (
 	"hash/fnv"
 	"logicka/lib/utils"
+	"sort"
 	"strings"
 )
 
@@ -17,9 +18,19 @@ func NewBracedExpr(elems []Expr) *BracedExpr {
 func (n *BracedExpr) Hash() uint64 {
 	h := fnv.New64a()
 	h.Write([]byte("braced"))
-	for _, e := range n.Elements {
-		h.Write(utils.Uint64ToBytes(e.Hash()))
+
+	hashes := make([]uint64, len(n.Elements))
+	for i, e := range n.Elements {
+		hashes[i] = e.Hash()
 	}
+	sort.Slice(hashes, func(i, j int) bool {
+		return hashes[i] < hashes[j]
+	})
+
+	for _, hash := range hashes {
+		h.Write(utils.Uint64ToBytes(hash))
+	}
+
 	return h.Sum64()
 }
 

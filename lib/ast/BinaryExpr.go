@@ -19,8 +19,23 @@ func (n *BinaryExpr) Hash() uint64 {
 	h := fnv.New64a()
 	h.Write([]byte("binary"))
 	h.Write([]byte(n.Operator.String()))
-	h.Write(utils.Uint64ToBytes(n.Left.Hash()))
-	h.Write(utils.Uint64ToBytes(n.Right.Hash()))
+
+	if n.Operator == lexer.BlImplication {
+		h.Write(utils.Uint64ToBytes(n.Left.Hash()))
+		h.Write(utils.Uint64ToBytes(n.Right.Hash()))
+		return h.Sum64()
+	}
+
+	leftHash := n.Left.Hash()
+	rightHash := n.Right.Hash()
+
+	if leftHash < rightHash {
+		h.Write(utils.Uint64ToBytes(leftHash))
+		h.Write(utils.Uint64ToBytes(rightHash))
+	} else {
+		h.Write(utils.Uint64ToBytes(rightHash))
+		h.Write(utils.Uint64ToBytes(leftHash))
+	}
 	return h.Sum64()
 }
 

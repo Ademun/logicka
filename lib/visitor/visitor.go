@@ -23,59 +23,58 @@ func (e OperatorError) Error() string {
 	return fmt.Sprintf("unknown operator: %s", e.Operator)
 }
 
-// Visitor defines the interface for AST node visitors.
 type Visitor[T any] interface {
-	VisitGrouping(node *ast.GroupingNode) (T, error)
-	VisitLiteral(node *ast.LiteralNode) (T, error)
-	VisitVariable(node *ast.VariableNode) (T, error)
-	VisitBinary(node *ast.BinaryNode) (T, error)
-	VisitChain(node *ast.ChainNode) (T, error)
-	VisitUnary(node *ast.UnaryNode) (T, error)
-	VisitPredicate(node *ast.PredicateNode) (T, error)
-	VisitQuantifier(node *ast.QuantifierNode) (T, error)
+	VisitAssignmentExpr(node *ast.AssignmentExpr) (T, error)
+	VisitBinaryExpr(node *ast.BinaryExpr) (T, error)
+	VisitBlockStmt(node *ast.BlockStmt) (T, error)
+	VisitBooleanExpr(node *ast.BooleanExpr) (T, error)
+	VisitBracedExpr(node *ast.BracedExpr) (T, error)
+	VisitChainExpr(node *ast.ChainExpr) (T, error)
+	VisitExprStmt(node *ast.ExprStmt) (T, error)
+	VisitFunctionCallExpr(node *ast.FunctionCallExpr) (T, error)
+	VisitFunctionDeclExpr(node *ast.FunctionDeclExpr) (T, error)
+	VisitGroupingExpr(node *ast.GroupingExpr) (T, error)
+	VisitIdentifierExpr(node *ast.IdentifierExpr) (T, error)
+	VisitNumberExpr(node *ast.NumberExpr) (T, error)
+	VisitQuantifierExpr(node *ast.QuantifierExpr) (T, error)
+	VisitStringExpr(node *ast.StringExpr) (T, error)
+	VisitUnaryExpr(node *ast.UnaryExpr) (T, error)
 }
 
-// Accept dispatches the appropriate visitor method based on the node type.
-func Accept[T any](node ast.ASTNode, visitor Visitor[T]) (T, error) {
+func Accept[T any](node ast.Node, visitor Visitor[T]) (T, error) {
 	switch n := node.(type) {
-	case *ast.GroupingNode:
-		return visitor.VisitGrouping(n)
-	case *ast.LiteralNode:
-		return visitor.VisitLiteral(n)
-	case *ast.VariableNode:
-		return visitor.VisitVariable(n)
-	case *ast.BinaryNode:
-		return visitor.VisitBinary(n)
-	case *ast.ChainNode:
-		return visitor.VisitChain(n)
-	case *ast.UnaryNode:
-		return visitor.VisitUnary(n)
-	case *ast.PredicateNode:
-		return visitor.VisitPredicate(n)
-	case *ast.QuantifierNode:
-		return visitor.VisitQuantifier(n)
+	case *ast.AssignmentExpr:
+		return visitor.VisitAssignmentExpr(n)
+	case *ast.BinaryExpr:
+		return visitor.VisitBinaryExpr(n)
+	case *ast.BlockStmt:
+		return visitor.VisitBlockStmt(n)
+	case *ast.BooleanExpr:
+		return visitor.VisitBooleanExpr(n)
+	case *ast.BracedExpr:
+		return visitor.VisitBracedExpr(n)
+	case *ast.ChainExpr:
+		return visitor.VisitChainExpr(n)
+	case *ast.ExprStmt:
+		return visitor.VisitExprStmt(n)
+	case *ast.FunctionCallExpr:
+		return visitor.VisitFunctionCallExpr(n)
+	case *ast.FunctionDeclExpr:
+		return visitor.VisitFunctionDeclExpr(n)
+	case *ast.GroupingExpr:
+		return visitor.VisitGroupingExpr(n)
+	case *ast.IdentifierExpr:
+		return visitor.VisitIdentifierExpr(n)
+	case *ast.NumberExpr:
+		return visitor.VisitNumberExpr(n)
+	case *ast.QuantifierExpr:
+		return visitor.VisitQuantifierExpr(n)
+	case *ast.StringExpr:
+		return visitor.VisitStringExpr(n)
+	case *ast.UnaryExpr:
+		return visitor.VisitUnaryExpr(n)
 	default:
 		var zero T
 		return zero, NodeTypeError{NodeType: fmt.Sprintf("%T", n)}
 	}
-}
-
-// EvaluationContext holds variable assignments for expression evaluation.
-type EvaluationContext struct {
-	Variables map[string]bool
-}
-
-func NewEvaluationContext() *EvaluationContext {
-	return &EvaluationContext{
-		Variables: make(map[string]bool),
-	}
-}
-
-func (ctx *EvaluationContext) SetVariable(name string, value bool) {
-	ctx.Variables[name] = value
-}
-
-func (ctx *EvaluationContext) GetVariable(name string) (bool, bool) {
-	value, exists := ctx.Variables[name]
-	return value, exists
 }
