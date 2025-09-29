@@ -1,7 +1,9 @@
 package ast
 
 import (
+	"hash/fnv"
 	"logicka/lib/lexer"
+	"logicka/lib/utils"
 )
 
 type QuantifierExpr struct {
@@ -17,7 +19,7 @@ func NewQuantifierExpr(qtype lexer.TokenType, variable Expr, domain, body Expr) 
 	}
 
 	switch domain.(type) {
-	case *IdentifierExpr, *BracedExpression:
+	case *IdentifierExpr, *BracedExpr:
 		break
 	default:
 		return nil, NewValidationError("Quantifier domain must be an identifier or a set literal")
@@ -28,6 +30,19 @@ func NewQuantifierExpr(qtype lexer.TokenType, variable Expr, domain, body Expr) 
 		Domain:   domain,
 		Body:     body,
 	}, nil
+}
+
+func (n *QuantifierExpr) Hash() uint64 {
+	h := fnv.New64a()
+	h.Write([]byte("quantifier"))
+	h.Write(utils.Uint64ToBytes(n.Variable.Hash()))
+	h.Write(utils.Uint64ToBytes(n.Domain.Hash()))
+	h.Write(utils.Uint64ToBytes(n.Body.Hash()))
+	return h.Sum64()
+}
+
+func (n *QuantifierExpr) Equals(other Node) bool {
+	return n.Hash() == other.Hash()
 }
 
 func (n *QuantifierExpr) String() string {

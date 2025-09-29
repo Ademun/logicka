@@ -1,14 +1,18 @@
 package ast
 
-import "fmt"
+type Node interface {
+	String() string
+	Hash() uint64
+	Equals(other Node) bool
+}
 
 type Stmt interface {
-	fmt.Stringer
+	Node
 	stmt()
 }
 
 type Expr interface {
-	fmt.Stringer
+	Node
 	Children() []Expr
 	expr()
 }

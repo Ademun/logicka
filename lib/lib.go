@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"logicka/lib/lexer"
 	"logicka/lib/parser"
+	"logicka/lib/visitor"
 
 	"github.com/sanity-io/litter"
 )

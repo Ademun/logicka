@@ -53,7 +53,7 @@ func (p *Parser) handlePrefix() (ast.Expr, error) {
 		return nil, err
 	}
 
-	return ast.NewUnaryExpr(*token, operand), nil
+	return ast.NewUnaryExpr(token.Type, operand), nil
 }
 
 func (p *Parser) handleInfix(left ast.Expr, precedence Precedence) (ast.Expr, error) {
@@ -63,7 +63,7 @@ func (p *Parser) handleInfix(left ast.Expr, precedence Precedence) (ast.Expr, er
 		return nil, err
 	}
 
-	return ast.NewBinaryExpr(*token, left, right), nil
+	return ast.NewBinaryExpr(token.Type, left, right), nil
 }
 
 func (p *Parser) handleStringExpression() (ast.Expr, error) {
@@ -125,7 +125,7 @@ func (p *Parser) handleBracedExpression() (ast.Expr, error) {
 
 	if p.current().Type == lexer.GlRightBrace {
 		p.consume()
-		return ast.NewBracedExpression(elements), nil
+		return ast.NewBracedExpr(elements), nil
 	}
 
 	for {
@@ -145,7 +145,7 @@ func (p *Parser) handleBracedExpression() (ast.Expr, error) {
 		}
 	}
 
-	return ast.NewBracedExpression(elements), nil
+	return ast.NewBracedExpr(elements), nil
 }
 
 func (p *Parser) handleIdentifier() (ast.Expr, error) {

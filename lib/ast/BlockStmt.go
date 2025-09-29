@@ -1,6 +1,10 @@
 package ast
 
-import "strings"
+import (
+	"hash/fnv"
+	"logicka/lib/utils"
+	"strings"
+)
 
 type BlockStmt struct {
 	Body []Stmt
@@ -8,6 +12,19 @@ type BlockStmt struct {
 
 func NewBlockStmt(body []Stmt) *BlockStmt {
 	return &BlockStmt{Body: body}
+}
+
+func (n *BlockStmt) Hash() uint64 {
+	h := fnv.New64a()
+	h.Write([]byte("block_stmt"))
+	for _, stmt := range n.Body {
+		h.Write(utils.Uint64ToBytes(stmt.Hash()))
+	}
+	return h.Sum64()
+}
+
+func (n *BlockStmt) Equals(other Node) bool {
+	return n.Hash() == other.Hash()
 }
 
 func (n *BlockStmt) String() string {

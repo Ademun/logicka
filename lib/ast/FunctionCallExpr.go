@@ -1,6 +1,10 @@
 package ast
 
-import "strings"
+import (
+	"hash/fnv"
+	"logicka/lib/utils"
+	"strings"
+)
 
 type FunctionCallExpr struct {
 	Name string
@@ -12,6 +16,20 @@ func NewFunctionCallExpr(name string, args []Expr) *FunctionCallExpr {
 		Name: name,
 		Args: args,
 	}
+}
+
+func (n *FunctionCallExpr) Hash() uint64 {
+	h := fnv.New64a()
+	h.Write([]byte("function_call"))
+	h.Write([]byte(n.Name))
+	for _, arg := range n.Args {
+		h.Write(utils.Uint64ToBytes(arg.Hash()))
+	}
+	return h.Sum64()
+}
+
+func (n *FunctionCallExpr) Equals(other Node) bool {
+	return n.Hash() == other.Hash()
 }
 
 func (n *FunctionCallExpr) String() string {

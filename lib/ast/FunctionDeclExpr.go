@@ -1,6 +1,10 @@
 package ast
 
-import "strings"
+import (
+	"hash/fnv"
+	"logicka/lib/utils"
+	"strings"
+)
 
 type FunctionDeclExpr struct {
 	Name string
@@ -20,6 +24,20 @@ func NewFunctionDeclExpr(name string, args []Expr, body Expr) (*FunctionDeclExpr
 		Args: args,
 		Body: body,
 	}, nil
+}
+
+func (n *FunctionDeclExpr) Hash() uint64 {
+	h := fnv.New64a()
+	h.Write([]byte("function_decl"))
+	for _, arg := range n.Args {
+		h.Write(utils.Uint64ToBytes(arg.Hash()))
+	}
+	h.Write(utils.Uint64ToBytes(n.Body.Hash()))
+	return h.Sum64()
+}
+
+func (n *FunctionDeclExpr) Equals(other Node) bool {
+	return n.Hash() == other.Hash()
 }
 
 func (n *FunctionDeclExpr) String() string {
