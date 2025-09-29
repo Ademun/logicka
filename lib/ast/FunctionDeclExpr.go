@@ -48,8 +48,4 @@ func (n *FunctionDeclExpr) String() string {
 	return n.Name + "(" + strings.Join(results, ", ") + ")" + " := " + n.Body.String()
 }
 
-func (n *FunctionDeclExpr) Children() []Expr {
-	return []Expr{n.Body}
-}
-
 func (n *FunctionDeclExpr) expr() {}

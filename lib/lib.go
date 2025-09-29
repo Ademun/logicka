@@ -4,6 +4,9 @@ import (
 	"fmt"
 	"logicka/lib/lexer"
 	"logicka/lib/parser"
+	"logicka/lib/simplification/rules/advanced"
+	"logicka/lib/simplification/rules/basic"
+	"logicka/lib/simplification/rules/chain"
 	"logicka/lib/visitor"
 
 	"github.com/sanity-io/litter"
@@ -38,6 +41,18 @@ func (l *Logicka) CalculateTruthTable(expr string, values map[string]bool) (inte
 
 	litter.Dump(ast)
 	fmt.Println(ast.String())
+
+	simplifier := visitor.NewSimplifier()
+	simplifier.AddRuleSet(basic.CreateBasicRuleSet())
+	simplifier.AddRuleSet(advanced.CreateAdvancedRuleSet())
+	simplifier.AddRuleSet(chain.CreateChainRuleSet())
+	simplified, err := simplifier.Simplify(ast)
+	if err != nil {
+		fmt.Println(err)
+		return nil, fmt.Errorf("simplification error: %w", err)
+	}
+
+	fmt.Println(simplified.String())
 
 	return nil, nil
 }

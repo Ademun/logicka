@@ -15,8 +15,11 @@ type Stmt interface {
 
 type Expr interface {
 	Node
-	Children() []Expr
 	expr()
+}
+
+type Traversable interface {
+	Children() []Expr
 }
 
 func IsTrue(node Expr) bool {

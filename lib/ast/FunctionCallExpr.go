@@ -40,8 +40,4 @@ func (n *FunctionCallExpr) String() string {
 	return n.Name + "(" + strings.Join(results, ", ") + ")"
 }
 
-func (n *FunctionCallExpr) Children() []Expr {
-	return n.Args
-}
-
 func (n *FunctionCallExpr) expr() {}

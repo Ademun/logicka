@@ -53,8 +53,4 @@ func (n *QuantifierExpr) String() string {
 	return n.Type.String() + n.Variable.String() + postfix + ": " + n.Body.String()
 }
 
-func (n *QuantifierExpr) Children() []Expr {
-	return []Expr{n.Body}
-}
-
 func (n *QuantifierExpr) expr() {}

@@ -28,8 +28,4 @@ func (n *BooleanExpr) String() string {
 	return strconv.FormatBool(n.Value)
 }
 
-func (n *BooleanExpr) Children() []Expr {
-	return []Expr{}
-}
-
 func (n *BooleanExpr) expr() {}

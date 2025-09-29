@@ -31,8 +31,4 @@ func (n *UnaryExpr) String() string {
 	return n.Operator.String() + n.Operand.String()
 }
 
-func (n *UnaryExpr) Children() []Expr {
-	return []Expr{n.Operand}
-}
-
 func (n *UnaryExpr) expr() {}

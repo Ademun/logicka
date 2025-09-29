@@ -47,8 +47,4 @@ func (n *BinaryExpr) String() string {
 	return n.Left.String() + " " + n.Operator.String() + " " + n.Right.String()
 }
 
-func (n *BinaryExpr) Children() []Expr {
-	return []Expr{n.Left, n.Right}
-}
-
 func (n *BinaryExpr) expr() {}

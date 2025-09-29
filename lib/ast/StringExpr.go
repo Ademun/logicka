@@ -25,8 +25,4 @@ func (n *StringExpr) String() string {
 	return "\"" + n.Value + "\""
 }
 
-func (n *StringExpr) Children() []Expr {
-	return []Expr{}
-}
-
 func (n *StringExpr) expr() {}

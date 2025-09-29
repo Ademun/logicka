@@ -25,8 +25,4 @@ func (n *IdentifierExpr) String() string {
 	return n.Name
 }
 
-func (n *IdentifierExpr) Children() []Expr {
-	return []Expr{}
-}
-
 func (n *IdentifierExpr) expr() {}
